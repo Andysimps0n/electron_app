@@ -13,7 +13,7 @@ import {
 } from '../../utils/dateUtils'
 
 const START_HOUR = 0
-const END_HOUR = 13
+const END_HOUR = 24
 const CELL_HEIGHT = 64
 const SNAP_MINUTES = 30
 const HORIZONTAL_SCROLL_DOMINANCE = 1.35
@@ -77,26 +77,6 @@ function resizeSelection(selection, edge, minute) {
       END_HOUR * 60,
     ),
   }
-}
-
-function CalendarIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
-      <rect
-        x="2"
-        y="4"
-        width="16"
-        height="14"
-        rx="2"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <path d="M2 8H18" stroke="currentColor" strokeWidth="2" />
-      <path d="M6 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M14 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  )
 }
 
 function ChevronLeft() {
@@ -164,16 +144,6 @@ function SettingsIcon() {
         strokeLinejoin="round"
       />
     </svg>
-  )
-}
-
-function NavRail() {
-  return (
-    <nav className="nav-rail" aria-label="Main navigation">
-      <div className="nav-rail__item nav-rail__item--active">
-        <CalendarIcon />
-      </div>
-    </nav>
   )
 }
 
@@ -1052,7 +1022,6 @@ export default function Calendar() {
 
   return (
     <div className="calendar">
-      <NavRail />
       <aside
         className={`month-sidebar${sidebarOpen ? ' month-sidebar--open' : ''}`}
         aria-hidden={!sidebarOpen}
