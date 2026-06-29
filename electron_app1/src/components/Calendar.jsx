@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PanelIcon,
+  SettingsIcon,
+} from './icons'
+import {
   addDays,
   addMonths,
   DAY_LABELS,
@@ -10,7 +16,7 @@ import {
   getWeekDates,
   isSameDay,
   isSameMonth,
-} from '../../utils/dateUtils'
+} from '../utils/dateUtils'
 
 const START_HOUR = 0
 const END_HOUR = 24
@@ -41,6 +47,19 @@ function formatMinutes(totalMinutes) {
   const period = hour >= 12 ? 'PM' : 'AM'
   const displayHour = hour % 12 === 0 ? 12 : hour % 12
   return `${displayHour}:${String(minute).padStart(2, '0')} ${period}`
+}
+
+function formatDigitalClock(date) {
+  const hours = date.getHours()
+  const minutes = date.getMinutes()
+  const period = hours >= 12 ? 'PM' : 'AM'
+  const displayHour = hours % 12 === 0 ? 12 : hours % 12
+
+  return {
+    hours: String(displayHour).padStart(2, '0'),
+    minutes: String(minutes).padStart(2, '0'),
+    period,
+  }
 }
 
 function formatSelectionRange(selection) {
@@ -79,71 +98,31 @@ function resizeSelection(selection, edge, minute) {
   }
 }
 
-function ChevronLeft() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-      <path
-        d="M10 3L5 8L10 13"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+function moveTimeBlock(block, dayIndex, startMinute) {
+  const duration = block.endMinute - block.startMinute
+  const clampedStart = clamp(
+    startMinute,
+    START_HOUR * 60,
+    END_HOUR * 60 - duration,
   )
+
+  return {
+    ...block,
+    dayIndex,
+    startMinute: clampedStart,
+    endMinute: clampedStart + duration,
+  }
 }
 
-function ChevronRight() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-      <path
-        d="M6 3L11 8L6 13"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
+function dragTimeBlock(original, startSlot, currentSlot) {
+  const dayDelta = currentSlot.dayIndex - startSlot.dayIndex
+  const minuteDelta = currentSlot.minute - startSlot.minute
+  const newDayIndex = clamp(original.dayIndex + dayDelta, 0, 6)
 
-function PanelIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-      <rect
-        x="1"
-        y="2"
-        width="16"
-        height="14"
-        rx="2"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <path d="M7 2V16" stroke="currentColor" strokeWidth="2" />
-    </svg>
-  )
-}
-
-function SettingsIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-      <path
-        d="M9 11.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M14.2 10.5 13.8 9.9c.1-.3.1-.6.1-.9s0-.6-.1-.9l.4-.6-1-1.7-.7.3c-.5-.4-1.1-.7-1.7-.9l-.1-.7H7.1l-.1.7c-.6.2-1.2.5-1.7.9l-.7-.3-1 1.7.4.6c-.1.3-.1.6-.1.9s0 .6.1.9l-.4.6 1 1.7.7-.3c.5.4 1.1.7 1.7.9l.1.7h3.8l.1-.7c.6-.2 1.2-.5 1.7-.9l.7.3 1-1.7Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-    </svg>
+  return moveTimeBlock(
+    original,
+    newDayIndex,
+    original.startMinute + minuteDelta,
   )
 }
 
@@ -166,7 +145,7 @@ function Sidebar({
           aria-label="Previous month"
           onClick={() => onMonthChange(addMonths(viewedMonth, -1))}
         >
-          <ChevronLeft />
+          <ChevronLeftIcon />
         </button>
         <h2 className="sidebar__title">{formatMonthYear(viewedMonth)}</h2>
         <button
@@ -175,7 +154,7 @@ function Sidebar({
           aria-label="Next month"
           onClick={() => onMonthChange(addMonths(viewedMonth, 1))}
         >
-          <ChevronRight />
+          <ChevronRightIcon />
         </button>
       </div>
 
@@ -304,6 +283,7 @@ function WeekView({
   const weekDates = getWeekDates(selectedDate)
   const [draftSelection, setDraftSelection] = useState(null)
   const [editorSelection, setEditorSelection] = useState(null)
+  const [editingEventId, setEditingEventId] = useState(null)
   const [eventTitle, setEventTitle] = useState('')
   const [events, setEvents] = useState([])
   const [now, setNow] = useState(() => new Date())
@@ -316,7 +296,7 @@ function WeekView({
   }
 
   useEffect(() => {
-    const intervalId = window.setInterval(() => setNow(new Date()), 60_000)
+    const intervalId = window.setInterval(() => setNow(new Date()), 1_000)
     return () => window.clearInterval(intervalId)
   }, [])
 
@@ -359,9 +339,21 @@ function WeekView({
   }
 
   function dismissEditor() {
+    setEditingEventId(null)
     setEditorSelection(null)
     setDraftSelection(null)
     setEventTitle('')
+  }
+
+  function openEventEditor(calendarEvent) {
+    setEditingEventId(calendarEvent.id)
+    setEditorSelection({
+      dayIndex: calendarEvent.dayIndex,
+      startMinute: calendarEvent.startMinute,
+      endMinute: calendarEvent.endMinute,
+    })
+    setEventTitle(calendarEvent.title)
+    setDraftSelection(null)
   }
 
   function navigateWeek(dayDelta) {
@@ -443,6 +435,14 @@ function WeekView({
 
     function handlePointerDownCapture(event) {
       if (event.target.closest('.event-editor')) {
+        return
+      }
+
+      if (event.target.closest('.week-view__event')) {
+        return
+      }
+
+      if (event.target.closest('.week-view__selection')) {
         return
       }
 
@@ -567,6 +567,10 @@ function WeekView({
       return
     }
 
+    if (event.target.closest('.week-view__event')) {
+      return
+    }
+
     if (interactionRef.current?.mode === 'dismiss') {
       event.currentTarget.setPointerCapture(event.pointerId)
       return
@@ -630,6 +634,64 @@ function WeekView({
       return
     }
 
+    if (
+      interaction.mode === 'pending-event-drag' ||
+      interaction.mode === 'drag-event' ||
+      interaction.mode === 'pending-selection-drag' ||
+      interaction.mode === 'drag-selection'
+    ) {
+      const dx = event.clientX - interaction.startX
+      const dy = event.clientY - interaction.startY
+
+      if (
+        interaction.mode === 'pending-event-drag' ||
+        interaction.mode === 'pending-selection-drag'
+      ) {
+        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) {
+          return
+        }
+
+        interaction.mode =
+          interaction.mode === 'pending-event-drag'
+            ? 'drag-event'
+            : 'drag-selection'
+      }
+
+      const currentSlot = getPointerSlot(event)
+      if (!currentSlot) {
+        return
+      }
+
+      const nextBlock = dragTimeBlock(
+        interaction.original,
+        interaction.startSlot,
+        currentSlot,
+      )
+
+      if (interaction.mode === 'drag-event') {
+        setEvents((currentEvents) =>
+          currentEvents.map((calendarEvent) =>
+            calendarEvent.id === interaction.calendarEvent.id
+              ? {
+                  ...calendarEvent,
+                  ...nextBlock,
+                  dateKey: getDateKey(weekDates[nextBlock.dayIndex]),
+                }
+              : calendarEvent,
+          ),
+        )
+
+        if (editingEventId === interaction.calendarEvent.id) {
+          setEditorSelection(nextBlock)
+        }
+      } else {
+        setDraftSelection(nextBlock)
+        setEditorSelection(nextBlock)
+      }
+
+      return
+    }
+
     const dx = event.clientX - interaction.startX
     const dy = event.clientY - interaction.startY
 
@@ -688,11 +750,31 @@ function WeekView({
       return
     }
 
+    if (interaction.mode === 'pending-event-drag') {
+      openEventEditor(interaction.calendarEvent)
+      interactionRef.current = null
+      return
+    }
+
+    if (
+      interaction.mode === 'drag-event' ||
+      interaction.mode === 'drag-selection'
+    ) {
+      interactionRef.current = null
+      return
+    }
+
+    if (interaction.mode === 'pending-selection-drag') {
+      interactionRef.current = null
+      return
+    }
+
     const endSlot = getPointerSlot(event) ?? interaction.startSlot
     const selection =
       draftSelection ?? buildSelection(interaction.startSlot, endSlot)
 
     setDraftSelection(selection)
+    setEditingEventId(null)
     setEditorSelection(selection)
     interactionRef.current = null
   }
@@ -713,6 +795,55 @@ function WeekView({
     }
   }
 
+  function handleEventPointerDown(pointerEvent, calendarEvent) {
+    if (pointerEvent.target.closest('.week-view__resize-handle')) {
+      return
+    }
+
+    pointerEvent.stopPropagation()
+    const startSlot = getPointerSlot(pointerEvent)
+    if (!startSlot) {
+      return
+    }
+
+    daysBodyViewportRef.current.setPointerCapture(pointerEvent.pointerId)
+    interactionRef.current = {
+      mode: 'pending-event-drag',
+      pointerId: pointerEvent.pointerId,
+      startX: pointerEvent.clientX,
+      startY: pointerEvent.clientY,
+      startSlot,
+      original: {
+        dayIndex: calendarEvent.dayIndex,
+        startMinute: calendarEvent.startMinute,
+        endMinute: calendarEvent.endMinute,
+      },
+      calendarEvent,
+    }
+  }
+
+  function handleSelectionPointerDown(event, selection) {
+    if (event.target.closest('.week-view__resize-handle')) {
+      return
+    }
+
+    event.stopPropagation()
+    const startSlot = getPointerSlot(event)
+    if (!startSlot) {
+      return
+    }
+
+    daysBodyViewportRef.current.setPointerCapture(event.pointerId)
+    interactionRef.current = {
+      mode: 'pending-selection-drag',
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startSlot,
+      original: { ...selection },
+    }
+  }
+
   function handleResizeEventPointerDown(event, edge, calendarEvent) {
     event.stopPropagation()
     daysBodyViewportRef.current.setPointerCapture(event.pointerId)
@@ -730,19 +861,39 @@ function WeekView({
       return
     }
 
-    setEvents((currentEvents) => [
-      ...currentEvents,
-      {
-        id: crypto.randomUUID(),
-        dateKey: getDateKey(weekDates[editorSelection.dayIndex]),
-        title: eventTitle.trim() || 'New event',
-        ...editorSelection,
-      },
-    ])
+    const title = eventTitle.trim() || 'New event'
+
+    if (editingEventId) {
+      setEvents((currentEvents) =>
+        currentEvents.map((calendarEvent) =>
+          calendarEvent.id === editingEventId
+            ? {
+                ...calendarEvent,
+                title,
+                dayIndex: editorSelection.dayIndex,
+                startMinute: editorSelection.startMinute,
+                endMinute: editorSelection.endMinute,
+              }
+            : calendarEvent,
+        ),
+      )
+    } else {
+      setEvents((currentEvents) => [
+        ...currentEvents,
+        {
+          id: crypto.randomUUID(),
+          dateKey: getDateKey(weekDates[editorSelection.dayIndex]),
+          title,
+          ...editorSelection,
+        },
+      ])
+    }
+
     dismissEditor()
   }
 
-  const visibleSelection = editorSelection ?? draftSelection
+  const visibleSelection = editingEventId ? draftSelection : editorSelection ?? draftSelection
+  const digitalClock = formatDigitalClock(now)
 
   function renderWeekHeaders(weekOffset) {
     const dates = getWeekDates(addDays(selectedDate, weekOffset * 7))
@@ -791,8 +942,13 @@ function WeekView({
               .map((event) => (
                 <div
                   key={event.id}
-                  className="week-view__event"
+                  className={`week-view__event${
+                    editingEventId === event.id ? ' week-view__event--editing' : ''
+                  }`}
                   style={getSelectionStyle(event)}
+                  onPointerDown={(pointerEvent) =>
+                    handleEventPointerDown(pointerEvent, event)
+                  }
                 >
                   <button
                     type="button"
@@ -831,6 +987,9 @@ function WeekView({
               editorSelection ? ' week-view__selection--editing' : ''
             }`}
             style={getSelectionStyle(visibleSelection)}
+            onPointerDown={(event) =>
+              handleSelectionPointerDown(event, visibleSelection)
+            }
           >
             <button
               type="button"
@@ -866,7 +1025,7 @@ function WeekView({
             <div className="event-editor__header">
               <span className="event-editor__dot" />
               <div>
-                <h2>Create event</h2>
+                <h2>{editingEventId ? 'Edit event' : 'Create event'}</h2>
                 <p>{formatSelectionRange(editorSelection)}</p>
               </div>
             </div>
@@ -924,20 +1083,33 @@ function WeekView({
             aria-label="Previous week"
             onClick={() => navigateWeek(-7)}
           >
-            <ChevronLeft />
+            <ChevronLeftIcon />
           </button>
-          <h1 className="week-view__title">{formatMonthYearShort(selectedDate)}</h1>
+          <div className="week-view__title-group">
+            <h1 className="week-view__title">{formatMonthYearShort(selectedDate)}</h1>
+          </div>
           <button
             type="button"
             className="week-view__nav-btn"
             aria-label="Next week"
             onClick={() => navigateWeek(7)}
           >
-            <ChevronRight />
+            <ChevronRightIcon />
           </button>
+          <time
+              className="week-view__clock"
+              dateTime={now.toISOString()}
+              aria-label={`Current time ${digitalClock.hours}:${digitalClock.minutes} ${digitalClock.period}`}
+            >
+              <span className="week-view__clock-digit">{digitalClock.hours}</span>
+              <span className="week-view__clock-separator" aria-hidden="true">
+                :
+              </span>
+              <span className="week-view__clock-digit">{digitalClock.minutes}</span>
+              <span className="week-view__clock-period">{digitalClock.period}</span>
+            </time>
         </div>
         <div className="week-view__header-actions">
-          <ViewToggle view={view} onViewChange={onViewChange} />
           <button
             type="button"
             className="week-view__settings-btn"

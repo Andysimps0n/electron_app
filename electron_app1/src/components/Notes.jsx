@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { PanelIcon } from './icons'
+import { handleListKeyDown } from '../utils/noteListEditor'
 
 const NOTES_STORAGE_KEY = 'notes'
 
@@ -115,6 +117,11 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
     }
 
     function handleKeyDown(event) {
+      if (handleListKeyDown(editor, event)) {
+        onContentChange(editor.innerHTML)
+        return
+      }
+
       if (!event.altKey) {
         return
       }
@@ -124,18 +131,20 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
       if (key === 'b') {
         event.preventDefault()
         document.execCommand('bold')
+        onContentChange(editor.innerHTML)
         return
       }
 
       if (key === 't') {
         event.preventDefault()
         document.execCommand('formatBlock', false, 'h2')
+        onContentChange(editor.innerHTML)
       }
     }
 
     editor.addEventListener('keydown', handleKeyDown)
     return () => editor.removeEventListener('keydown', handleKeyDown)
-  }, [note.id])
+  }, [note.id, onContentChange])
 
   function handleInput() {
     onContentChange(editorRef.current?.innerHTML ?? '')
@@ -158,9 +167,10 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
         role="textbox"
         aria-multiline="true"
         aria-label="Note content"
-        data-placeholder="Start writing… (⌥B bold, ⌥T title)"
+        data-placeholder="Start writing… Type - space for a list (⌥B bold, ⌥T title)"
         onInput={handleInput}
         suppressContentEditableWarning
+        spellCheck="false"
       />
     </div>
   )
@@ -250,21 +260,9 @@ export default function Notes() {
             aria-pressed={sidebarOpen}
             onClick={() => setSidebarOpen((open) => !open)}
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-              <rect
-                x="1"
-                y="2"
-                width="16"
-                height="14"
-                rx="2"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-              <path d="M7 2V16" stroke="currentColor" strokeWidth="2" />
-            </svg>
+            <PanelIcon />
           </button>
-          <span className="notes__shortcuts-hint">⌥B bold · ⌥T title</span>
+          <span className="notes__shortcuts-hint">- space list · ⌥B bold · ⌥T title</span>
         </header>
 
         <NoteEditor
