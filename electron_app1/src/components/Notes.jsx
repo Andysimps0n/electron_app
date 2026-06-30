@@ -167,7 +167,7 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
         role="textbox"
         aria-multiline="true"
         aria-label="Note content"
-        data-placeholder="Start writing… Type - space for a list (⌥B bold, ⌥T title)"
+        data-placeholder="Start writing,,,"
         onInput={handleInput}
         suppressContentEditableWarning
         spellCheck="false"
@@ -262,8 +262,7 @@ export default function Notes() {
           >
             <PanelIcon />
           </button>
-          <span className="notes__shortcuts-hint">- space list · ⌥B bold · ⌥T title</span>
-        </header>
+         </header>
 
         <NoteEditor
           key={activeNote.id}

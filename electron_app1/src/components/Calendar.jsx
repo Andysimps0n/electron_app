@@ -3,7 +3,6 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   PanelIcon,
-  SettingsIcon,
 } from './icons'
 import {
   addDays,
@@ -14,6 +13,7 @@ import {
   formatMonthYearShort,
   getMonthGrid,
   getWeekDates,
+  getWeekNumber,
   isSameDay,
   isSameMonth,
 } from '../utils/dateUtils'
@@ -126,91 +126,221 @@ function dragTimeBlock(original, startSlot, currentSlot) {
   )
 }
 
+const TODOS_STORAGE_KEY = 'calendar-todos'
+
+function createTodo(text, timeMinute = null) {
+  return {
+    id: crypto.randomUUID(),
+    text,
+    done: false,
+    timeMinute,
+    createdAt: Date.now(),
+  }
+}
+
+function getDefaultTodos() {
+  return [
+    createTodo('Review quarterly report', 9 * 60),
+    createTodo('Sync with design team', 11 * 60 + 30),
+    createTodo('Prepare sprint presentation', 14 * 60),
+  ]
+}
+
+function loadTodos() {
+  try {
+    const stored = localStorage.getItem(TODOS_STORAGE_KEY)
+    if (stored === null) {
+      return getDefaultTodos()
+    }
+
+    if (!stored) {
+      return []
+    }
+
+    const parsed = JSON.parse(stored)
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+
+    return parsed
+  } catch {
+    return []
+  }
+}
+
+function SidebarTodoList({ todos, onAddTodo, onToggleTodo, onDeleteTodo }) {
+  const [draft, setDraft] = useState('')
+
+  function commitDraft(text) {
+    const trimmed = text.trim()
+    if (!trimmed) {
+      return
+    }
+
+    onAddTodo(trimmed)
+  }
+
+  function handleKeyDown(event) {
+    if (event.key !== 'Enter' || event.shiftKey) {
+      return
+    }
+
+    event.preventDefault()
+    commitDraft(draft)
+    setDraft('')
+  }
+
+  function handlePaste(event) {
+    const pasted = event.clipboardData.getData('text')
+    if (!pasted.includes('\n')) {
+      return
+    }
+
+    event.preventDefault()
+    pasted
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .forEach((line) => onAddTodo(line))
+    setDraft('')
+  }
+
+  return (
+    <section className="sidebar-todos">
+      <h3 className="sidebar-todos__title">Upcoming Tasks</h3>
+
+      {todos.length > 0 && (
+        <ul className="sidebar-todos__list">
+          {todos.map((todo) => (
+            <li
+              key={todo.id}
+              className={`sidebar-todos__item${
+                todo.done ? ' sidebar-todos__item--done' : ''
+              }`}
+            >
+              <label className="sidebar-todos__check">
+                <input
+                  type="checkbox"
+                  checked={todo.done}
+                  onChange={() => onToggleTodo(todo.id)}
+                  aria-label={`Mark "${todo.text}" as ${
+                    todo.done ? 'incomplete' : 'complete'
+                  }`}
+                />
+                <span className="sidebar-todos__checkmark" />
+              </label>
+              <div className="sidebar-todos__content">
+                <span className="sidebar-todos__text">{todo.text}</span>
+                {todo.timeMinute != null && (
+                  <span className="sidebar-todos__time">
+                    {formatMinutes(todo.timeMinute)}
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                className="sidebar-todos__delete-btn"
+                aria-label={`Delete "${todo.text}"`}
+                onClick={() => onDeleteTodo(todo.id)}
+              >
+                ×
+              </button>
+            </li>
+          ))}
+                <textarea
+        className={`sidebar-todos__empty${
+          todos.length === 0 ? ' sidebar-todos__empty--solo' : ''
+        }`}
+        placeholder="Add a task..."
+        value={draft}
+        rows={todos.length > 0 ? 1 : 4}
+        aria-label="Add tasks"
+        onChange={(event) => setDraft(event.target.value)}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
+      />
+        </ul>
+      )}
+    </section>
+  )
+}
+
 function Sidebar({
   viewedMonth,
   selectedDate,
   today,
   eventDates,
+  todos,
+  sidebarOpen,
   onMonthChange,
   onDateSelect,
+  onToggleSidebar,
+  onAddTodo,
+  onToggleTodo,
+  onDeleteTodo,
 }) {
   const cells = getMonthGrid(viewedMonth.getFullYear(), viewedMonth.getMonth())
 
   return (
     <aside className="sidebar">
-      <div className="sidebar__header">
-        <button
-          type="button"
-          className="sidebar__nav-btn"
-          aria-label="Previous month"
-          onClick={() => onMonthChange(addMonths(viewedMonth, -1))}
-        >
-          <ChevronLeftIcon />
-        </button>
-        <h2 className="sidebar__title">{formatMonthYear(viewedMonth)}</h2>
-        <button
-          type="button"
-          className="sidebar__nav-btn"
-          aria-label="Next month"
-          onClick={() => onMonthChange(addMonths(viewedMonth, 1))}
-        >
-          <ChevronRightIcon />
-        </button>
+      <div className="sidebar__month">
+        <div className="sidebar__header">
+          <h2 className="sidebar__title">{formatMonthYear(viewedMonth)}</h2>
+          <button
+            type="button"
+            className="sidebar__panel-toggle"
+            aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+            aria-pressed={sidebarOpen}
+            onClick={onToggleSidebar}
+          >
+            <PanelIcon />
+          </button>
+        </div>
+
+        <div className="sidebar__grid">
+          {DAY_LABELS.map((label) => (
+            <span key={label} className="sidebar__day-label">
+              {label.charAt(0)}
+            </span>
+          ))}
+
+          {cells.map((date) => {
+            const inMonth = isSameMonth(date, viewedMonth)
+            const isToday = isSameDay(date, today)
+            const isSelected = isSameDay(date, selectedDate)
+            const hasEvent = eventDates.some((eventDate) =>
+              isSameDay(eventDate, date),
+            )
+
+            return (
+              <button
+                key={date.toISOString()}
+                type="button"
+                className={[
+                  'sidebar__date',
+                  !inMonth && 'sidebar__date--outside',
+                  isToday && 'sidebar__date--today',
+                  isSelected && !isToday && 'sidebar__date--selected',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                onClick={() => onDateSelect(date)}
+              >
+                <span className="sidebar__date-num">{date.getDate()}</span>
+                {hasEvent && <span className="sidebar__event-dot" />}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
-      <div className="sidebar__grid">
-        {DAY_LABELS.map((label) => (
-          <span key={label} className="sidebar__day-label">
-            {label}
-          </span>
-        ))}
-
-        {cells.map((date) => {
-          const inMonth = isSameMonth(date, viewedMonth)
-          const isToday = isSameDay(date, today)
-          const isSelected = isSameDay(date, selectedDate)
-          const hasEvent = eventDates.some((eventDate) => isSameDay(eventDate, date))
-
-          return (
-            <button
-              key={date.toISOString()}
-              type="button"
-              className={[
-                'sidebar__date',
-                !inMonth && 'sidebar__date--outside',
-                isToday && 'sidebar__date--today',
-                isSelected && !isToday && 'sidebar__date--selected',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              onClick={() => onDateSelect(date)}
-            >
-              <span className="sidebar__date-num">{date.getDate()}</span>
-              {hasEvent && <span className="sidebar__event-dot" />}
-            </button>
-          )
-        })}
-      </div>
+      <SidebarTodoList
+        todos={todos}
+        onAddTodo={onAddTodo}
+        onToggleTodo={onToggleTodo}
+        onDeleteTodo={onDeleteTodo}
+      />
     </aside>
-  )
-}
-
-function ViewToggle({ view, onViewChange }) {
-  const views = ['Day', 'Week', 'Month']
-
-  return (
-    <div className="view-toggle">
-      {views.map((label) => (
-        <button
-          key={label}
-          type="button"
-          className={`view-toggle__btn${view === label.toLowerCase() ? ' view-toggle__btn--active' : ''}`}
-          onClick={() => onViewChange(label.toLowerCase())}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
   )
 }
 
@@ -259,6 +389,16 @@ function SettingsPanel({ reverseScroll, onReverseScrollChange, onClose }) {
   )
 }
 
+function getScrollTopForCurrentTime(wrapper) {
+  const currentTime = new Date()
+  const totalMinutes = currentTime.getHours() * 60 + currentTime.getMinutes()
+  const nowTop = ((totalMinutes - START_HOUR * 60) / 60) * CELL_HEIGHT
+  const targetScroll = nowTop - wrapper.clientHeight * 0.25
+  const maxScroll = Math.max(0, wrapper.scrollHeight - wrapper.clientHeight)
+
+  return Math.max(0, Math.min(targetScroll, maxScroll))
+}
+
 function WeekView({
   selectedDate,
   today,
@@ -268,10 +408,10 @@ function WeekView({
   onToggleSidebar,
   onViewChange,
   onWeekChange,
-  onOpenSettings,
 }) {
   const daysBodyViewportRef = useRef(null)
   const gridWrapperRef = useRef(null)
+  const weekViewRef = useRef(null)
   const interactionRef = useRef(null)
   const selectedDateRef = useRef(selectedDate)
   const weekScrollOffsetRef = useRef(0)
@@ -294,6 +434,58 @@ function WeekView({
   const scrollStyle = {
     '--week-scroll-offset': `${weekScrollOffset}px`,
   }
+
+  function scrollToCurrentTime() {
+    const wrapper = gridWrapperRef.current
+    if (!wrapper || wrapper.clientHeight === 0) {
+      return false
+    }
+
+    const dates = getWeekDates(selectedDateRef.current)
+    const includesToday = dates.some((date) => isSameDay(date, today))
+    if (!includesToday) {
+      return true
+    }
+
+    wrapper.scrollTop = getScrollTopForCurrentTime(wrapper)
+    return true
+  }
+
+  useEffect(() => {
+    let frameId = 0
+
+    function attemptScroll() {
+      if (!scrollToCurrentTime()) {
+        frameId = window.requestAnimationFrame(attemptScroll)
+      }
+    }
+
+    frameId = window.requestAnimationFrame(attemptScroll)
+    return () => window.cancelAnimationFrame(frameId)
+  }, [selectedDate, today])
+
+  useEffect(() => {
+    const root = weekViewRef.current
+    if (!root) {
+      return undefined
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) {
+          return
+        }
+
+        window.requestAnimationFrame(() => {
+          window.requestAnimationFrame(scrollToCurrentTime)
+        })
+      },
+      { threshold: 0.01 },
+    )
+
+    observer.observe(root)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const intervalId = window.setInterval(() => setNow(new Date()), 1_000)
@@ -856,6 +1048,29 @@ function WeekView({
     }
   }
 
+  function handleNewEvent() {
+    const todayIndex = weekDates.findIndex((date) => isSameDay(date, today))
+    const dayIndex =
+      todayIndex >= 0
+        ? todayIndex
+        : weekDates.findIndex((date) => isSameDay(date, selectedDate))
+
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
+    const snappedStart =
+      Math.ceil(nowMinutes / SNAP_MINUTES) * SNAP_MINUTES || 9 * 60
+    const startMinute = clamp(snappedStart, START_HOUR * 60, END_HOUR * 60 - 90)
+    const selection = {
+      dayIndex: dayIndex >= 0 ? dayIndex : 0,
+      startMinute,
+      endMinute: startMinute + 90,
+    }
+
+    setDraftSelection(selection)
+    setEditorSelection(selection)
+    setEditingEventId(null)
+    setEventTitle('')
+  }
+
   function handleSaveEvent() {
     if (!editorSelection) {
       return
@@ -928,8 +1143,15 @@ function WeekView({
 
     return (
       <div className="week-view__week-columns" key={`columns-${weekOffset}`}>
-        {dates.map((date) => (
-          <div key={date.toISOString()} className="week-view__day-column">
+        {dates.map((date) => {
+          const isToday = isSameDay(date, today)
+          return (
+            <div
+              key={date.toISOString()}
+              className={`week-view__day-column${
+                isToday ? ' week-view__day-column--today' : ''
+              }`}
+            >
             {HOURS.map((hour) => (
               <div
                 key={`${date.toISOString()}-${hour}`}
@@ -971,7 +1193,8 @@ function WeekView({
                 </div>
               ))}
           </div>
-        ))}
+          )
+        })}
 
         {weekOffset === 0 && weekNowIndicatorStyle && (
           <div
@@ -1023,7 +1246,6 @@ function WeekView({
             }}
           >
             <div className="event-editor__header">
-              <span className="event-editor__dot" />
               <div>
                 <h2>{editingEventId ? 'Edit event' : 'Create event'}</h2>
                 <p>{formatSelectionRange(editorSelection)}</p>
@@ -1065,58 +1287,67 @@ function WeekView({
   }
 
   return (
-    <div className="week-view">
+    <div className="week-view" ref={weekViewRef}>
       <header className="week-view__header">
-        <div className="week-view__nav">
+        <div className="week-view__week-picker">
+          {!sidebarOpen && (
+            <button
+              type="button"
+              className="week-view__sidebar-reopen"
+              aria-label="Show sidebar"
+              onClick={onToggleSidebar}
+            >
+              <PanelIcon />
+            </button>
+          )}
+          <div className="week-view__week-picker-inner">
           <button
             type="button"
-            className={`week-view__sidebar-toggle${sidebarOpen ? ' week-view__sidebar-toggle--active' : ''}`}
-            aria-label={sidebarOpen ? 'Hide month sidebar' : 'Show month sidebar'}
-            aria-pressed={sidebarOpen}
-            onClick={onToggleSidebar}
-          >
-            <PanelIcon />
-          </button>
-          <button
-            type="button"
-            className="week-view__nav-btn"
+            className="week-view__week-picker-btn"
             aria-label="Previous week"
             onClick={() => navigateWeek(-7)}
           >
             <ChevronLeftIcon />
           </button>
-          <div className="week-view__title-group">
-            <h1 className="week-view__title">{formatMonthYearShort(selectedDate)}</h1>
-          </div>
+          <span className="week-view__week-label">
+            Week {getWeekNumber(selectedDate)}
+          </span>
           <button
             type="button"
-            className="week-view__nav-btn"
+            className="week-view__week-picker-btn"
             aria-label="Next week"
             onClick={() => navigateWeek(7)}
           >
             <ChevronRightIcon />
           </button>
-          <time
-              className="week-view__clock"
-              dateTime={now.toISOString()}
-              aria-label={`Current time ${digitalClock.hours}:${digitalClock.minutes} ${digitalClock.period}`}
-            >
-              <span className="week-view__clock-digit">{digitalClock.hours}</span>
-              <span className="week-view__clock-separator" aria-hidden="true">
-                :
-              </span>
-              <span className="week-view__clock-digit">{digitalClock.minutes}</span>
-              <span className="week-view__clock-period">{digitalClock.period}</span>
-            </time>
+          </div>
         </div>
+
+        <div className="week-view__header-center">
+          <div className="week-view__title-group">
+            <h1 className="week-view__title">{formatMonthYearShort(selectedDate)}</h1>
+          </div>
+          <time
+            className="week-view__clock"
+            dateTime={now.toISOString()}
+            aria-label={`Current time ${digitalClock.hours}:${digitalClock.minutes} ${digitalClock.period}`}
+          >
+            <span className="week-view__clock-digit">{digitalClock.hours}</span>
+            <span className="week-view__clock-separator" aria-hidden="true">
+              :
+            </span>
+            <span className="week-view__clock-digit">{digitalClock.minutes}</span>
+            <span className="week-view__clock-period">{digitalClock.period}</span>
+          </time>
+        </div>
+
         <div className="week-view__header-actions">
           <button
             type="button"
-            className="week-view__settings-btn"
-            aria-label="Open settings"
-            onClick={onOpenSettings}
+            className="week-view__new-event-btn"
+            onClick={handleNewEvent}
           >
-            <SettingsIcon />
+            + New Event
           </button>
         </div>
       </header>
@@ -1126,7 +1357,7 @@ function WeekView({
         ref={gridWrapperRef}
       >
         <div className="week-view__grid">
-          <div className="week-view__corner" />
+          <div className="week-view__corner">GMT +1</div>
 
           <div className="week-view__days-header-viewport" style={scrollStyle}>
             <div className="week-view__days-track">
@@ -1163,7 +1394,7 @@ function WeekView({
   )
 }
 
-export default function Calendar() {
+export default function Calendar({ settingsOpen, onSettingsOpenChange }) {
   const today = new Date()
   const [selectedDate, setSelectedDate] = useState(today)
   const [viewedMonth, setViewedMonth] = useState(
@@ -1171,12 +1402,37 @@ export default function Calendar() {
   )
   const [view, setView] = useState('week')
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [settingsOpen, setSettingsOpen] = useState(false)
   const [reverseScroll, setReverseScroll] = useState(loadReverseScrollSetting)
+  const [todos, setTodos] = useState(loadTodos)
+
+  const settingsVisible = settingsOpen ?? false
+  const setSettingsVisible = onSettingsOpenChange ?? (() => {})
 
   useEffect(() => {
     localStorage.setItem('reverseScroll', String(reverseScroll))
   }, [reverseScroll])
+
+  useEffect(() => {
+    localStorage.setItem(TODOS_STORAGE_KEY, JSON.stringify(todos))
+  }, [todos])
+
+  function handleAddTodo(text) {
+    const currentTime = new Date()
+    const timeMinute = currentTime.getHours() * 60 + currentTime.getMinutes()
+    setTodos((current) => [createTodo(text, timeMinute), ...current])
+  }
+
+  function handleToggleTodo(id) {
+    setTodos((current) =>
+      current.map((todo) =>
+        todo.id === id ? { ...todo, done: !todo.done } : todo,
+      ),
+    )
+  }
+
+  function handleDeleteTodo(id) {
+    setTodos((current) => current.filter((todo) => todo.id !== id))
+  }
 
   function handleDateSelect(date) {
     setSelectedDate(date)
@@ -1203,8 +1459,13 @@ export default function Calendar() {
           selectedDate={selectedDate}
           today={today}
           eventDates={getMockEventDates(viewedMonth)}
-          onMonthChange={setViewedMonth}
+          todos={todos}
+          sidebarOpen={sidebarOpen}
           onDateSelect={handleDateSelect}
+          onToggleSidebar={() => setSidebarOpen((open) => !open)}
+          onAddTodo={handleAddTodo}
+          onToggleTodo={handleToggleTodo}
+          onDeleteTodo={handleDeleteTodo}
         />
       </aside>
       <WeekView
@@ -1216,13 +1477,12 @@ export default function Calendar() {
         onToggleSidebar={() => setSidebarOpen((open) => !open)}
         onViewChange={setView}
         onWeekChange={handleWeekChange}
-        onOpenSettings={() => setSettingsOpen(true)}
       />
-      {settingsOpen && (
+      {settingsVisible && (
         <SettingsPanel
           reverseScroll={reverseScroll}
           onReverseScrollChange={setReverseScroll}
-          onClose={() => setSettingsOpen(false)}
+          onClose={() => setSettingsVisible(false)}
         />
       )}
     </div>
