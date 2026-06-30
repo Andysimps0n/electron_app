@@ -11,6 +11,17 @@ export function CalendarIcon({ width = 20, height = 20, weight = 2 }) {
   )
 }
 
+export function TimerIcon({ width = 20, height = 20, weight = 2 }) {
+  return (
+    <Icon viewBox="0 0 20 20" width={width} height={height} weight={weight}>
+      <circle cx="10" cy="11" r="7" />
+      <path d="M10 4V2" strokeLinecap="round" />
+      <path d="M8 2H12" strokeLinecap="round" />
+      <path d="M10 11V7" strokeLinecap="round" />
+    </Icon>
+  )
+}
+
 export function NoteIcon({ width = 20, height = 20, weight = 2 }) {
   return (
     <Icon viewBox="0 0 20 20" width={width} height={height} weight={weight}>

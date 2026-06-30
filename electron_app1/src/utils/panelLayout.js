@@ -1,6 +1,7 @@
 export const VIEW_META = {
   calendar: { id: 'calendar', title: 'Calendar' },
   notes: { id: 'notes', title: 'Notes' },
+  timer: { id: 'timer', title: 'Timer' },
 }
 
 export function createTab(viewType) {

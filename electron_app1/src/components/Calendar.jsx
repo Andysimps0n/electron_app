@@ -4,6 +4,8 @@ import {
   ChevronRightIcon,
   PanelIcon,
 } from './icons'
+import SidebarTodoList from './SidebarTodoList'
+import { useCalendarTodos } from '../hooks/useCalendarTodos'
 import {
   addDays,
   addMonths,
@@ -123,145 +125,6 @@ function dragTimeBlock(original, startSlot, currentSlot) {
     original,
     newDayIndex,
     original.startMinute + minuteDelta,
-  )
-}
-
-const TODOS_STORAGE_KEY = 'calendar-todos'
-
-function createTodo(text, timeMinute = null) {
-  return {
-    id: crypto.randomUUID(),
-    text,
-    done: false,
-    timeMinute,
-    createdAt: Date.now(),
-  }
-}
-
-function getDefaultTodos() {
-  return [
-    createTodo('Review quarterly report', 9 * 60),
-    createTodo('Sync with design team', 11 * 60 + 30),
-    createTodo('Prepare sprint presentation', 14 * 60),
-  ]
-}
-
-function loadTodos() {
-  try {
-    const stored = localStorage.getItem(TODOS_STORAGE_KEY)
-    if (stored === null) {
-      return getDefaultTodos()
-    }
-
-    if (!stored) {
-      return []
-    }
-
-    const parsed = JSON.parse(stored)
-    if (!Array.isArray(parsed)) {
-      return []
-    }
-
-    return parsed
-  } catch {
-    return []
-  }
-}
-
-function SidebarTodoList({ todos, onAddTodo, onToggleTodo, onDeleteTodo }) {
-  const [draft, setDraft] = useState('')
-
-  function commitDraft(text) {
-    const trimmed = text.trim()
-    if (!trimmed) {
-      return
-    }
-
-    onAddTodo(trimmed)
-  }
-
-  function handleKeyDown(event) {
-    if (event.key !== 'Enter' || event.shiftKey) {
-      return
-    }
-
-    event.preventDefault()
-    commitDraft(draft)
-    setDraft('')
-  }
-
-  function handlePaste(event) {
-    const pasted = event.clipboardData.getData('text')
-    if (!pasted.includes('\n')) {
-      return
-    }
-
-    event.preventDefault()
-    pasted
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .forEach((line) => onAddTodo(line))
-    setDraft('')
-  }
-
-  return (
-    <section className="sidebar-todos">
-      <h3 className="sidebar-todos__title">Upcoming Tasks</h3>
-
-      {todos.length > 0 && (
-        <ul className="sidebar-todos__list">
-          {todos.map((todo) => (
-            <li
-              key={todo.id}
-              className={`sidebar-todos__item${
-                todo.done ? ' sidebar-todos__item--done' : ''
-              }`}
-            >
-              <label className="sidebar-todos__check">
-                <input
-                  type="checkbox"
-                  checked={todo.done}
-                  onChange={() => onToggleTodo(todo.id)}
-                  aria-label={`Mark "${todo.text}" as ${
-                    todo.done ? 'incomplete' : 'complete'
-                  }`}
-                />
-                <span className="sidebar-todos__checkmark" />
-              </label>
-              <div className="sidebar-todos__content">
-                <span className="sidebar-todos__text">{todo.text}</span>
-                {todo.timeMinute != null && (
-                  <span className="sidebar-todos__time">
-                    {formatMinutes(todo.timeMinute)}
-                  </span>
-                )}
-              </div>
-              <button
-                type="button"
-                className="sidebar-todos__delete-btn"
-                aria-label={`Delete "${todo.text}"`}
-                onClick={() => onDeleteTodo(todo.id)}
-              >
-                ×
-              </button>
-            </li>
-          ))}
-                <textarea
-        className={`sidebar-todos__empty${
-          todos.length === 0 ? ' sidebar-todos__empty--solo' : ''
-        }`}
-        placeholder="Add a task..."
-        value={draft}
-        rows={todos.length > 0 ? 1 : 4}
-        aria-label="Add tasks"
-        onChange={(event) => setDraft(event.target.value)}
-        onKeyDown={handleKeyDown}
-        onPaste={handlePaste}
-      />
-        </ul>
-      )}
-    </section>
   )
 }
 
@@ -537,6 +400,17 @@ function WeekView({
     setEventTitle('')
   }
 
+  function handleDeleteEvent() {
+    if (!editingEventId) {
+      return
+    }
+
+    setEvents((currentEvents) =>
+      currentEvents.filter((calendarEvent) => calendarEvent.id !== editingEventId),
+    )
+    dismissEditor()
+  }
+
   function openEventEditor(calendarEvent) {
     setEditingEventId(calendarEvent.id)
     setEditorSelection({
@@ -654,7 +528,29 @@ function WeekView({
     function handleKeyDown(event) {
       if (event.key === 'Escape') {
         dismissEditor()
+        return
       }
+
+      if (event.key !== 'Delete' && event.key !== 'Backspace') {
+        return
+      }
+
+      if (!editingEventId) {
+        return
+      }
+
+      const target = event.target
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement
+      ) {
+        if (target.value !== '') {
+          return
+        }
+      }
+
+      event.preventDefault()
+      handleDeleteEvent()
     }
 
     document.addEventListener('pointerdown', handlePointerDownCapture, true)
@@ -665,7 +561,7 @@ function WeekView({
       document.removeEventListener('pointerup', handlePointerUpCapture, true)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [editorSelection])
+  }, [editorSelection, editingEventId])
 
   function getPointerSlot(event) {
     const viewport = daysBodyViewportRef.current
@@ -676,16 +572,38 @@ function WeekView({
     const viewportRect = viewport.getBoundingClientRect()
     const x = event.clientX - viewportRect.left
     const y = event.clientY - viewportRect.top
-    const dayWidth = viewportRect.width / 7
-    const weekWidth = viewportRect.width
-    const trackX = x - weekScrollOffsetRef.current + weekWidth
-    const dayColumn = Math.floor(trackX / dayWidth)
 
-    if (dayColumn < 7 || dayColumn >= 14 || y < 0) {
+    if (y < 0) {
       return null
     }
 
-    const dayIndex = dayColumn - 7
+    const track = viewport.querySelector('.week-view__days-track')
+    const currentWeekPanel = track?.children?.[1]
+    if (!currentWeekPanel) {
+      return null
+    }
+
+    const columns = currentWeekPanel.querySelectorAll(
+      ':scope > .week-view__day-column',
+    )
+    let dayIndex = null
+
+    for (let index = 0; index < columns.length; index++) {
+      const rect = columns[index].getBoundingClientRect()
+      const isLastColumn = index === columns.length - 1
+
+      if (
+        event.clientX >= rect.left &&
+        (event.clientX < rect.right || isLastColumn)
+      ) {
+        dayIndex = index
+      }
+    }
+
+    if (dayIndex == null) {
+      return null
+    }
+
     const totalGridMinutes = (END_HOUR - START_HOUR) * 60
     const rawMinutes = START_HOUR * 60 + (y / CELL_HEIGHT) * 60
     const snappedMinutes =
@@ -720,6 +638,17 @@ function WeekView({
   function getSelectionStyle(selection) {
     return {
       '--selection-day-index': selection.dayIndex,
+      '--selection-top': `${
+        ((selection.startMinute - START_HOUR * 60) / 60) * CELL_HEIGHT
+      }px`,
+      '--selection-height': `${
+        ((selection.endMinute - selection.startMinute) / 60) * CELL_HEIGHT
+      }px`,
+    }
+  }
+
+  function getEventStyle(selection) {
+    return {
       '--selection-top': `${
         ((selection.startMinute - START_HOUR * 60) / 60) * CELL_HEIGHT
       }px`,
@@ -1167,7 +1096,7 @@ function WeekView({
                   className={`week-view__event${
                     editingEventId === event.id ? ' week-view__event--editing' : ''
                   }`}
-                  style={getSelectionStyle(event)}
+                  style={getEventStyle(event)}
                   onPointerDown={(pointerEvent) =>
                     handleEventPointerDown(pointerEvent, event)
                   }
@@ -1254,7 +1183,7 @@ function WeekView({
             <label className="event-editor__field">
               <span>Name</span>
               <input
-                autoFocus
+                autoFocus={!editingEventId}
                 value={eventTitle}
                 placeholder="New event"
                 onChange={(event) => setEventTitle(event.target.value)}
@@ -1341,15 +1270,6 @@ function WeekView({
           </time>
         </div>
 
-        <div className="week-view__header-actions">
-          <button
-            type="button"
-            className="week-view__new-event-btn"
-            onClick={handleNewEvent}
-          >
-            + New Event
-          </button>
-        </div>
       </header>
 
       <div
@@ -1403,7 +1323,7 @@ export default function Calendar({ settingsOpen, onSettingsOpenChange }) {
   const [view, setView] = useState('week')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [reverseScroll, setReverseScroll] = useState(loadReverseScrollSetting)
-  const [todos, setTodos] = useState(loadTodos)
+  const { todos, addTodo, toggleTodo, deleteTodo } = useCalendarTodos()
 
   const settingsVisible = settingsOpen ?? false
   const setSettingsVisible = onSettingsOpenChange ?? (() => {})
@@ -1411,28 +1331,6 @@ export default function Calendar({ settingsOpen, onSettingsOpenChange }) {
   useEffect(() => {
     localStorage.setItem('reverseScroll', String(reverseScroll))
   }, [reverseScroll])
-
-  useEffect(() => {
-    localStorage.setItem(TODOS_STORAGE_KEY, JSON.stringify(todos))
-  }, [todos])
-
-  function handleAddTodo(text) {
-    const currentTime = new Date()
-    const timeMinute = currentTime.getHours() * 60 + currentTime.getMinutes()
-    setTodos((current) => [createTodo(text, timeMinute), ...current])
-  }
-
-  function handleToggleTodo(id) {
-    setTodos((current) =>
-      current.map((todo) =>
-        todo.id === id ? { ...todo, done: !todo.done } : todo,
-      ),
-    )
-  }
-
-  function handleDeleteTodo(id) {
-    setTodos((current) => current.filter((todo) => todo.id !== id))
-  }
 
   function handleDateSelect(date) {
     setSelectedDate(date)
@@ -1463,9 +1361,9 @@ export default function Calendar({ settingsOpen, onSettingsOpenChange }) {
           sidebarOpen={sidebarOpen}
           onDateSelect={handleDateSelect}
           onToggleSidebar={() => setSidebarOpen((open) => !open)}
-          onAddTodo={handleAddTodo}
-          onToggleTodo={handleToggleTodo}
-          onDeleteTodo={handleDeleteTodo}
+          onAddTodo={addTodo}
+          onToggleTodo={toggleTodo}
+          onDeleteTodo={deleteTodo}
         />
       </aside>
       <WeekView

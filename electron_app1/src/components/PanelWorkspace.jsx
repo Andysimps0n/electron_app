@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import Calendar from './Calendar'
 import Notes from './Notes'
-import { CalendarIcon, NoteIcon } from './icons'
+import Timer from './Timer'
+import { CalendarIcon, NoteIcon, TimerIcon } from './icons'
 import {
   findPaneById,
   moveTab,
@@ -13,6 +14,7 @@ import {
 const TAB_ICONS = {
   calendar: CalendarIcon,
   notes: NoteIcon,
+  timer: TimerIcon,
 }
 
 function parseDragPayload(event) {
@@ -214,7 +216,7 @@ function PanelPane({
       <div className="panel-pane__content">
         {pane.tabs.length === 0 ? (
           <div className="panel-pane__empty">
-            <p>Drop a tab here or open Calendar / Notes from the sidebar.</p>
+            <p>Drop a tab here or open Calendar / Notes / Timer from the sidebar.</p>
           </div>
         ) : (
           pane.tabs.map((tab) => (
@@ -230,6 +232,7 @@ function PanelPane({
                 />
               )}
               {tab.viewType === 'notes' && <Notes />}
+              {tab.viewType === 'timer' && <Timer />}
             </div>
           ))
         )}
