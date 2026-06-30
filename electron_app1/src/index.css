@@ -38,7 +38,7 @@
 
   --border-width: 1px;
   --border-color: var(--deep);
-  --grid-line: var(--deep);
+  --grid-line: #1e1e1e;
   --surface-dark: var(--black);
   --surface-dark-2: var(--deep);
   --surface-dark-3: var(--deep);
