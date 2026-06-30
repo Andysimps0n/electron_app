@@ -169,6 +169,7 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
         aria-label="Note content"
         data-placeholder="Start writing,,,"
         onInput={handleInput}
+        placeholder="Start writing..."
         suppressContentEditableWarning
         spellCheck="false"
       />
