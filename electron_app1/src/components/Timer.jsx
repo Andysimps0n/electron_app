@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { PanelIcon } from './icons'
-import SidebarTodoList from './SidebarTodoList'
 import { useCalendarTodos } from '../hooks/useCalendarTodos'
+import { formatTodoTime } from '../utils/calendarTodos'
 
 const POMODORO_PRESETS = [
   { id: '25-5', label: '25 / 5', focusSeconds: 25 * 60, breakSeconds: 5 * 60 },
@@ -40,55 +40,138 @@ function TimerSidebar({
   activePresetId,
   onSelectFocus,
   onSelectClock,
-  todos,
-  onAddTodo,
-  onToggleTodo,
-  onDeleteTodo,
 }) {
+  const { todos, addTodo, toggleTodo, deleteTodo } = useCalendarTodos()
+  const [todoDraft, setTodoDraft] = useState('')
+
+  function commitTodoDraft(text) {
+    const trimmed = text.trim()
+    if (!trimmed) {
+      return
+    }
+
+    addTodo(trimmed)
+  }
+
+  function handleTodoKeyDown(event) {
+    if (event.key !== 'Enter' || event.shiftKey) {
+      return
+    }
+
+    event.preventDefault()
+    commitTodoDraft(todoDraft)
+    setTodoDraft('')
+  }
+
+  function handleTodoPaste(event) {
+    const pasted = event.clipboardData.getData('text')
+    if (!pasted.includes('\n')) {
+      return
+    }
+
+    event.preventDefault()
+    pasted
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .forEach((line) => addTodo(line))
+    setTodoDraft('')
+  }
+
   return (
     <aside className="sidebar timer-sidebar">
-      <div className="timer-sidebar__modes">
-        <section className="timer-sidebar__section">
-          <h2 className="sidebar__title timer-sidebar__section-title">Focus</h2>
-          <ul className="timer-sidebar__list">
+      <div className="timer-sidebar-modes">
+        <section className="timer-sidebar-section">
+          <h2 className="sidebar-title timer-sidebar-section-title">Focus</h2>
+          <ul className="timer-sidebar-list">
             {POMODORO_PRESETS.map((preset) => (
               <li key={preset.id}>
                 <button
                   type="button"
-                  className={`timer-sidebar__item${
+                  className={`timer-sidebar-item${
                     activeMode === 'focus' && activePresetId === preset.id
-                      ? ' timer-sidebar__item--active'
+                      ? ' timer-sidebar-item-active'
                       : ''
                   }`}
                   onClick={() => onSelectFocus(preset)}
                 >
-                  <span className="timer-sidebar__item-label">{preset.label}</span>
-                  <span className="timer-sidebar__item-meta">focus / break</span>
+                  <span className="timer-sidebar-item-label">{preset.label}</span>
+                  <span className="timer-sidebar-item-meta">focus / break</span>
                 </button>
               </li>
             ))}
               <button
                 type="button"
-                className={`timer-sidebar__item${
-                  activeMode === 'clock' ? ' timer-sidebar__item--active' : ''
+                className={`timer-sidebar-item${
+                  activeMode === 'clock' ? ' timer-sidebar-item-active' : ''
                 }`}
                 onClick={onSelectClock}
               >
-                <span className="timer-sidebar__item-label">Desk Clock</span>
-                <span className="timer-sidebar__item-meta">digital or analog</span>
+                <span className="timer-sidebar-item-label">Desk Clock</span>
+                <span className="timer-sidebar-item-meta">digital or analog</span>
               </button>
           </ul>
         </section>
 
       </div>
 
-      <SidebarTodoList
-        todos={todos}
-        onAddTodo={onAddTodo}
-        onToggleTodo={onToggleTodo}
-        onDeleteTodo={onDeleteTodo}
-        title="Tasks"
-      />
+      <section className="sidebar-todos">
+        <h3 className="sidebar-todos-title">Tasks</h3>
+
+        {todos.length > 0 && (
+          <ul className="sidebar-todos-list">
+            {todos.map((todo) => (
+              <li
+                key={todo.id}
+                className={`sidebar-todos-item${
+                  todo.done ? ' sidebar-todos-item-done' : ''
+                }`}
+              >
+                <label className="sidebar-todos-check">
+                  <input
+                    type="checkbox"
+                    checked={todo.done}
+                    onChange={() => toggleTodo(todo.id)}
+                    aria-label={`Mark "${todo.text}" as ${
+                      todo.done ? 'incomplete' : 'complete'
+                    }`}
+                  />
+                  <span className="sidebar-todos-checkmark" />
+                </label>
+                <div className="sidebar-todos-content">
+                  <span className="sidebar-todos-text">{todo.text}</span>
+                  {todo.timeMinute != null && (
+                    <span className="sidebar-todos-time">
+                      {formatTodoTime(todo.timeMinute)}
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="sidebar-todos-delete-btn"
+                  aria-label={`Delete "${todo.text}"`}
+                  onClick={() => deleteTodo(todo.id)}
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <textarea
+          className={`sidebar-todos-empty${
+            todos.length === 0 ? ' sidebar-todos-empty-solo' : ''
+          }`}
+          placeholder="Add a task..."
+          value={todoDraft}
+          rows={todos.length > 0 ? 1 : 4}
+          aria-label="Add tasks"
+          onChange={(event) => setTodoDraft(event.target.value)}
+          onKeyDown={handleTodoKeyDown}
+          onPaste={handleTodoPaste}
+        />
+      </section>
     </aside>
   )
 }
@@ -112,18 +195,18 @@ function FocusDisplay({
 
   return (
     <div className={`focus-display focus-display--${phase}`}>
-      <div className="focus-display__header">
-        <span className="focus-display__phase">{phaseLabel}</span>
-        <span className="focus-display__session">
+      <div className="focus-display-header">
+        <span className="focus-display-phase">{phaseLabel}</span>
+        <span className="focus-display-session">
           {phase === 'focus' ? `Session ${nextSessionNumber}` : `After session ${completedSessions}`}
         </span>
       </div>
 
-      <div className="focus-display__ring">
-        <svg className="focus-display__progress" viewBox="0 0 120 120" aria-hidden="true">
-          <circle className="focus-display__track" cx="60" cy="60" r="54" />
+      <div className="focus-display-ring">
+        <svg className="focus-display-progress" viewBox="0 0 120 120" aria-hidden="true">
+          <circle className="focus-display-track" cx="60" cy="60" r="54" />
           <circle
-            className="focus-display__fill"
+            className="focus-display-fill"
             cx="60"
             cy="60"
             r="54"
@@ -133,24 +216,24 @@ function FocusDisplay({
             }}
           />
         </svg>
-        <div className="focus-display__time">{formatCountdown(secondsRemaining)}</div>
+        <div className="focus-display-time">{formatCountdown(secondsRemaining)}</div>
       </div>
 
       {statusMessage && (
-        <p className="focus-display__status">{statusMessage}</p>
+        <p className="focus-display-status">{statusMessage}</p>
       )}
 
-      <p className="focus-display__hint">
+      <p className="focus-display-hint">
         {phase === 'focus'
           ? 'One block at a time. Pause if you need to step away.'
           : 'Rest your eyes and stretch before the next block.'}
       </p>
 
-      <div className="focus-display__controls">
+      <div className="focus-display-controls">
         {!isRunning ? (
           <button
             type="button"
-            className="focus-display__btn focus-display__btn--primary"
+            className="focus-display-btn focus-display-btn-primary"
             onClick={onStart}
             disabled={secondsRemaining === 0}
           >
@@ -159,16 +242,16 @@ function FocusDisplay({
         ) : (
           <button
             type="button"
-            className="focus-display__btn focus-display__btn--primary"
+            className="focus-display-btn focus-display-btn-primary"
             onClick={onPause}
           >
             Pause
           </button>
         )}
-        <button type="button" className="focus-display__btn" onClick={onReset}>
+        <button type="button" className="focus-display-btn" onClick={onReset}>
           Reset block
         </button>
-        <button type="button" className="focus-display__btn focus-display__btn--ghost" onClick={onSkipPhase}>
+        <button type="button" className="focus-display-btn focus-display-btn-ghost" onClick={onSkipPhase}>
           {phase === 'focus' ? 'Skip to break' : 'Skip to focus'}
         </button>
       </div>
@@ -200,18 +283,18 @@ function AnalogClockFace({ date }) {
         y1={innerY}
         x2={outerX}
         y2={outerY}
-        className="desk-clock__tick"
+        className="desk-clock-tick"
       />
     )
   })
 
   return (
-    <div className="desk-clock__analog">
-      <svg className="desk-clock__face" viewBox="0 0 120 120" aria-hidden="true">
-        <circle className="desk-clock__dial" cx="60" cy="60" r="54" />
+    <div className="desk-clock-analog">
+      <svg className="desk-clock-face" viewBox="0 0 120 120" aria-hidden="true">
+        <circle className="desk-clock-dial" cx="60" cy="60" r="54" />
         {ticks}
         <line
-          className="desk-clock__hand desk-clock__hand--hour"
+          className="desk-clock-hand desk-clock-hand-hour"
           x1="60"
           y1="60"
           x2="60"
@@ -219,7 +302,7 @@ function AnalogClockFace({ date }) {
           transform={`rotate(${hourAngle} 60 60)`}
         />
         <line
-          className="desk-clock__hand desk-clock__hand--minute"
+          className="desk-clock-hand desk-clock-hand-minute"
           x1="60"
           y1="60"
           x2="60"
@@ -227,27 +310,27 @@ function AnalogClockFace({ date }) {
           transform={`rotate(${minuteAngle} 60 60)`}
         />
         <line
-          className="desk-clock__hand desk-clock__hand--second"
+          className="desk-clock-hand desk-clock-hand-second"
           x1="60"
           y1="66"
           x2="60"
           y2="20"
           transform={`rotate(${secondAngle} 60 60)`}
         />
-        <circle className="desk-clock__center" cx="60" cy="60" r="3" />
+        <circle className="desk-clock-center" cx="60" cy="60" r="3" />
       </svg>
-      <p className="desk-clock__date">{formatClockDate(date)}</p>
+      <p className="desk-clock-date">{formatClockDate(date)}</p>
     </div>
   )
 }
 
 function DigitalClockDisplay({ date }) {
   return (
-    <div className="desk-clock__digital">
-      <time className="desk-clock__time" dateTime={date.toISOString()}>
+    <div className="desk-clock-digital">
+      <time className="desk-clock-time" dateTime={date.toISOString()}>
         {formatClockTime(date)}
       </time>
-      <p className="desk-clock__date">{formatClockDate(date)}</p>
+      <p className="desk-clock-date">{formatClockDate(date)}</p>
     </div>
   )
 }
@@ -276,7 +359,6 @@ export default function Timer() {
   const [statusMessage, setStatusMessage] = useState('')
   const [clockDisplayMode, setClockDisplayMode] = useState('digital')
   const [now, setNow] = useState(() => new Date())
-  const { todos, addTodo, toggleTodo, deleteTodo } = useCalendarTodos()
 
   const intervalRef = useRef(null)
   const onPhaseCompleteRef = useRef(() => {})
@@ -395,7 +477,7 @@ export default function Timer() {
   return (
     <div className="timer">
       <aside
-        className={`month-sidebar${sidebarOpen ? ' month-sidebar--open' : ''}`}
+        className={`month-sidebar${sidebarOpen ? ' month-sidebar-open' : ''}`}
         aria-hidden={!sidebarOpen}
       >
         <TimerSidebar
@@ -403,18 +485,14 @@ export default function Timer() {
           activePresetId={activePresetId}
           onSelectFocus={handleSelectFocus}
           onSelectClock={handleSelectClock}
-          todos={todos}
-          onAddTodo={addTodo}
-          onToggleTodo={toggleTodo}
-          onDeleteTodo={deleteTodo}
         />
       </aside>
 
-      <div className="timer__main">
-        <header className="timer__toolbar">
+      <div className="timer-main">
+        <header className="timer-toolbar">
           <button
             type="button"
-            className={`timer__sidebar-toggle${sidebarOpen ? ' timer__sidebar-toggle--active' : ''}`}
+            className={`timer-sidebar-toggle${sidebarOpen ? ' timer-sidebar-toggle-active' : ''}`}
             aria-label={sidebarOpen ? 'Hide timer sidebar' : 'Show timer sidebar'}
             aria-pressed={sidebarOpen}
             onClick={() => setSidebarOpen((open) => !open)}
@@ -423,11 +501,11 @@ export default function Timer() {
           </button>
 
           {activeMode === 'clock' && (
-            <div className="timer__display-toggle" role="group" aria-label="Clock display mode">
+            <div className="timer-display-toggle" role="group" aria-label="Clock display mode">
               <button
                 type="button"
-                className={`timer__display-toggle-btn${
-                  clockDisplayMode === 'digital' ? ' timer__display-toggle-btn--active' : ''
+                className={`timer-display-toggle-btn${
+                  clockDisplayMode === 'digital' ? ' timer-display-toggle-btn-active' : ''
                 }`}
                 aria-pressed={clockDisplayMode === 'digital'}
                 onClick={() => setClockDisplayMode('digital')}
@@ -436,8 +514,8 @@ export default function Timer() {
               </button>
               <button
                 type="button"
-                className={`timer__display-toggle-btn${
-                  clockDisplayMode === 'analog' ? ' timer__display-toggle-btn--active' : ''
+                className={`timer-display-toggle-btn${
+                  clockDisplayMode === 'analog' ? ' timer-display-toggle-btn-active' : ''
                 }`}
                 aria-pressed={clockDisplayMode === 'analog'}
                 onClick={() => setClockDisplayMode('analog')}

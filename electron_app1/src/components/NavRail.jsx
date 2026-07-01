@@ -18,14 +18,14 @@ export default function NavRail({
 }) {
   return (
     <div className="nav-rail-shell">
-      <div className="nav-rail-shell__clip">
+      <div className="nav-rail-shell-clip">
         <nav className="nav-rail" aria-label="Main navigation">
-          <div className="nav-rail__items">
+          <div className="nav-rail-items">
             {NAV_ITEMS.map(({ id, label, Icon }) => (
               <button
                 key={id}
                 type="button"
-                className={`nav-rail__item${activeView === id ? ' nav-rail__item--active' : ''}`}
+                className={`nav-rail-item${activeView === id ? ' nav-rail-item-active' : ''}`}
                 aria-label={label}
                 aria-current={activeView === id ? 'page' : undefined}
                 onClick={() => onViewChange(id)}
@@ -37,7 +37,7 @@ export default function NavRail({
 
           <button
             type="button"
-            className="nav-rail__item"
+            className="nav-rail-item"
             aria-label="Settings"
             onClick={onOpenSettings}
           >

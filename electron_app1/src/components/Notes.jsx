@@ -60,31 +60,31 @@ function NotesSidebar({ notes, activeNoteId, onSelectNote, onCreateNote }) {
 
   return (
     <aside className="sidebar notes-sidebar">
-      <div className="notes-sidebar__header">
-        <h2 className="sidebar__title">Recent Notes</h2>
+      <div className="notes-sidebar-header">
+        <h2 className="sidebar-title">Recent Notes</h2>
         <button
           type="button"
-          className="notes-sidebar__new-btn"
+          className="notes-sidebar-new-btn"
           onClick={onCreateNote}
         >
           + New
         </button>
       </div>
 
-      <ul className="notes-sidebar__list">
+      <ul className="notes-sidebar-list">
         {recentNotes.map((note) => (
           <li key={note.id}>
             <button
               type="button"
-              className={`notes-sidebar__item${
-                note.id === activeNoteId ? ' notes-sidebar__item--active' : ''
+              className={`notes-sidebar-item${
+                note.id === activeNoteId ? ' notes-sidebar-item-active' : ''
               }`}
               onClick={() => onSelectNote(note.id)}
             >
-              <span className="notes-sidebar__item-title">
+              <span className="notes-sidebar-item-title">
                 {getNoteDisplayTitle(note)}
               </span>
-              <span className="notes-sidebar__item-date">
+              <span className="notes-sidebar-item-date">
                 {new Date(note.createdAt).toLocaleDateString(undefined, {
                   month: 'short',
                   day: 'numeric',
@@ -154,7 +154,7 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
     <div className="note-editor">
       <input
         type="text"
-        className="note-editor__title"
+        className="note-editor-title"
         placeholder="Note title"
         value={note.title}
         onChange={(event) => onTitleChange(event.target.value)}
@@ -162,7 +162,7 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
 
       <div
         ref={editorRef}
-        className="note-editor__body"
+        className="note-editor-body"
         contentEditable
         role="textbox"
         aria-multiline="true"
@@ -218,7 +218,7 @@ export default function Notes() {
     return (
       <div className="notes">
         <aside
-          className={`month-sidebar${sidebarOpen ? ' month-sidebar--open' : ''}`}
+          className={`month-sidebar${sidebarOpen ? ' month-sidebar-open' : ''}`}
           aria-hidden={!sidebarOpen}
         >
           <NotesSidebar
@@ -228,7 +228,7 @@ export default function Notes() {
             onCreateNote={handleCreateNote}
           />
         </aside>
-        <div className="notes__empty">
+        <div className="notes-empty">
           <p>No notes yet.</p>
           <button type="button" onClick={handleCreateNote}>
             Create your first note
@@ -241,7 +241,7 @@ export default function Notes() {
   return (
     <div className="notes">
       <aside
-        className={`month-sidebar${sidebarOpen ? ' month-sidebar--open' : ''}`}
+        className={`month-sidebar${sidebarOpen ? ' month-sidebar-open' : ''}`}
         aria-hidden={!sidebarOpen}
       >
         <NotesSidebar
@@ -252,11 +252,11 @@ export default function Notes() {
         />
       </aside>
 
-      <div className="notes__main">
-        <header className="notes__toolbar">
+      <div className="notes-main">
+        <header className="notes-toolbar">
           <button
             type="button"
-            className={`notes__sidebar-toggle${sidebarOpen ? ' notes__sidebar-toggle--active' : ''}`}
+            className={`notes-sidebar-toggle${sidebarOpen ? ' notes-sidebar-toggle-active' : ''}`}
             aria-label={sidebarOpen ? 'Hide notes sidebar' : 'Show notes sidebar'}
             aria-pressed={sidebarOpen}
             onClick={() => setSidebarOpen((open) => !open)}

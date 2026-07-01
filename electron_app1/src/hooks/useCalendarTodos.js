@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   createTodo,
   loadTodos,
@@ -8,6 +8,9 @@ import {
 
 export function useCalendarTodos() {
   const [todos, setTodos] = useState(loadTodos)
+  const todosRef = useRef(todos)
+
+  todosRef.current = todos
 
   useEffect(() => {
     function handleTodosChanged() {
@@ -21,11 +24,11 @@ export function useCalendarTodos() {
   }, [])
 
   function updateTodos(updater) {
-    setTodos((current) => {
-      const next = typeof updater === 'function' ? updater(current) : updater
-      saveTodos(next)
-      return next
-    })
+    const next =
+      typeof updater === 'function' ? updater(todosRef.current) : updater
+
+    saveTodos(next)
+    setTodos(next)
   }
 
   function addTodo(text) {

@@ -48,11 +48,11 @@ function TabBar({
       'application/x-panel-tab',
       JSON.stringify({ tabId: tab.id, sourcePaneId: pane.id }),
     )
-    event.currentTarget.classList.add('panel-tab--dragging')
+    event.currentTarget.classList.add('panel-tab-dragging')
   }
 
   function handleDragEnd(event) {
-    event.currentTarget.classList.remove('panel-tab--dragging')
+    event.currentTarget.classList.remove('panel-tab-dragging')
     onDragLeaveTab()
   }
 
@@ -74,14 +74,14 @@ function TabBar({
 
   return (
     <div
-      className={`panel-pane__tab-bar${
-        isFocused ? ' panel-pane__tab-bar--focused' : ''
-      }${dropTarget?.paneId === pane.id ? ' panel-pane__tab-bar--drop-target' : ''}`}
+      className={`panel-pane-tab-bar${
+        isFocused ? ' panel-pane-tab-bar-focused' : ''
+      }${dropTarget?.paneId === pane.id ? ' panel-pane-tab-bar-drop-target' : ''}`}
       onMouseDown={onFocusPane}
       onDragOver={handleBarDragOver}
       onDrop={handleBarDrop}
     >
-      <div className="panel-pane__tabs">
+      <div className="panel-pane-tabs">
         {pane.tabs.map((tab, index) => {
           const Icon = TAB_ICONS[tab.viewType]
           const isActive = tab.id === pane.activeTabId
@@ -90,13 +90,13 @@ function TabBar({
 
           return (
             <div key={tab.id} className="panel-tab-wrap">
-              {isDropBefore && <span className="panel-tab__drop-indicator" />}
+              {isDropBefore && <span className="panel-tab-drop-indicator" />}
               <div
                 role="tab"
                 tabIndex={0}
                 aria-selected={isActive}
                 draggable
-                className={`panel-tab${isActive ? ' panel-tab--active' : ''}`}
+                className={`panel-tab${isActive ? ' panel-tab-active' : ''}`}
                 onClick={() => onSelectTab(tab.id)}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' || event.key === ' ') {
@@ -129,10 +129,10 @@ function TabBar({
                 }}
               >
                 {Icon && <Icon width={14} height={14} />}
-                <span className="panel-tab__label">{tab.title}</span>
+                <span className="panel-tab-label">{tab.title}</span>
                 <button
                   type="button"
-                  className="panel-tab__close"
+                  className="panel-tab-close"
                   aria-label={`Close ${tab.title}`}
                   onClick={(event) => {
                     event.stopPropagation()
@@ -147,29 +147,8 @@ function TabBar({
         })}
         {dropTarget?.paneId === pane.id &&
           dropTarget.index === pane.tabs.length && (
-            <span className="panel-tab__drop-indicator panel-tab__drop-indicator--end" />
+            <span className="panel-tab-drop-indicator panel-tab-drop-indicator-end" />
           )}
-      </div>
-
-      <div className="panel-pane__tab-actions">
-        <button
-          type="button"
-          className="panel-pane__split-btn"
-          aria-label="Split right"
-          title="Split right"
-          onClick={() => onSplitPane('horizontal')}
-        >
-          ▥
-        </button>
-        <button
-          type="button"
-          className="panel-pane__split-btn"
-          aria-label="Split down"
-          title="Split down"
-          onClick={() => onSplitPane('vertical')}
-        >
-          ▤
-        </button>
       </div>
     </div>
   )
@@ -190,7 +169,7 @@ function PanelPane({
 }) {
   return (
     <div
-      className={`panel-pane${isFocused ? ' panel-pane--focused' : ''}`}
+      className={`panel-pane${isFocused ? ' panel-pane-focused' : ''}`}
       onMouseDown={onFocusPane}
     >
       <TabBar
@@ -213,16 +192,16 @@ function PanelPane({
         onDragLeaveTab={onDragLeaveTab}
       />
 
-      <div className="panel-pane__content">
+      <div className="panel-pane-content">
         {pane.tabs.length === 0 ? (
-          <div className="panel-pane__empty">
+          <div className="panel-pane-empty">
             <p>Drop a tab here or open Calendar / Notes / Timer from the sidebar.</p>
           </div>
         ) : (
           pane.tabs.map((tab) => (
             <div
               key={tab.id}
-              className="panel-pane__view"
+              className="panel-pane-view"
               hidden={tab.id !== pane.activeTabId}
             >
               {tab.viewType === 'calendar' && (
@@ -279,7 +258,7 @@ function LayoutNode({
   return (
     <div className={`panel-split panel-split--${node.direction}`}>
       <div
-        className="panel-split__child"
+        className="panel-split-child"
         style={
           node.direction === 'horizontal'
             ? { flexBasis: `${ratio * 100}%` }
@@ -300,8 +279,8 @@ function LayoutNode({
           onDragLeaveTab={onDragLeaveTab}
         />
       </div>
-      <div className="panel-split__divider" aria-hidden="true" />
-      <div className="panel-split__child panel-split__child--second">
+      <div className="panel-split-divider" aria-hidden="true" />
+      <div className="panel-split-child panel-split-child-second">
         <LayoutNode
           node={node.second}
           layout={layout}
