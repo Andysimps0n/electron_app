@@ -230,7 +230,7 @@ function Sidebar({
       </div>
 
       <section className="sidebar-todos">
-        <h3 className="sidebar-todos-title">Upcoming Tasks</h3>
+        <h3 className="sidebar-todos-title">TODO LIST</h3>
 
         {todos.length > 0 && (
           <ul className="sidebar-todos-list">
@@ -273,14 +273,14 @@ function Sidebar({
             <textarea
               className={`sidebar-todos-empty${
                 todos.length === 0 ? ' sidebar-todos-empty-solo' : ''
-                    }`}
-                placeholder="Add a task..."
-                value={todoDraft}
-                rows={todos.length > 0 ? 1 : 4}
-                aria-label="Add tasks"
-                onChange={(event) => setTodoDraft(event.target.value)}
-                onKeyDown={handleTodoKeyDown}
-                onPaste={handleTodoPaste}
+                  }`}
+              placeholder="Add a task...   (Enter to add)"
+              value={todoDraft}
+              rows={todos.length > 0 ? 1 : 4}
+              aria-label="Add tasks"
+              onChange={(event) => setTodoDraft(event.target.value)}
+              onKeyDown={handleTodoKeyDown}
+              onPaste={handleTodoPaste}
               />
           </ul>
         )}
@@ -1185,24 +1185,8 @@ function WeekView({
                     handleEventPointerDown(pointerEvent, event)
                   }
                 >
-                  <button
-                    type="button"
-                    className="week-view-resize-handle week-view-resize-handle-start"
-                    aria-label="Resize event start time"
-                    onPointerDown={(pointerEvent) =>
-                      handleResizeEventPointerDown(pointerEvent, 'start', event)
-                    }
-                  />
                   <strong>{event.title}</strong>
                   <span>{formatSelectionRange(event)}</span>
-                  <button
-                    type="button"
-                    className="week-view-resize-handle week-view-resize-handle-end"
-                    aria-label="Resize event end time"
-                    onPointerDown={(pointerEvent) =>
-                      handleResizeEventPointerDown(pointerEvent, 'end', event)
-                    }
-                  />
                 </div>
               ))}
           </div>
@@ -1227,24 +1211,8 @@ function WeekView({
               handleSelectionPointerDown(event, visibleSelection)
             }
           >
-            <button
-              type="button"
-              className="week-view-resize-handle week-view-resize-handle-start"
-              aria-label="Resize selected start time"
-              onPointerDown={(event) =>
-                handleResizeSelectionPointerDown(event, 'start', visibleSelection)
-              }
-            />
             <strong>{eventTitle.trim() || 'New event'}</strong>
             <span>{formatSelectionRange(visibleSelection)}</span>
-            <button
-              type="button"
-              className="week-view-resize-handle week-view-resize-handle-end"
-              aria-label="Resize selected end time"
-              onPointerDown={(event) =>
-                handleResizeSelectionPointerDown(event, 'end', visibleSelection)
-              }
-            />
           </div>
         )}
 
@@ -1313,7 +1281,7 @@ function WeekView({
               <PanelIcon />
             </button>
           )}
-          <div className="week-view-week-picker-inner">
+          {/* <div className="week-view-week-picker-inner">
           <button
             type="button"
             className="week-view-week-picker-btn"
@@ -1333,7 +1301,7 @@ function WeekView({
           >
             <ChevronRightIcon />
           </button>
-          </div>
+          </div> */}
         </div>
 
         <div className="week-view-header-center">

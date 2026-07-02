@@ -1,6 +1,7 @@
 import {
   CalendarIcon,
   NoteIcon,
+  PanelIcon,
   SettingsIcon,
   TimerIcon,
 } from './icons'
@@ -14,6 +15,8 @@ const NAV_ITEMS = [
 export default function NavRail({
   activeView,
   onViewChange,
+  onSplitView,
+  canSplit,
   onOpenSettings,
 }) {
   return (
@@ -35,14 +38,27 @@ export default function NavRail({
             ))}
           </div>
 
-          <button
-            type="button"
-            className="nav-rail-item"
-            aria-label="Settings"
-            onClick={onOpenSettings}
-          >
-            <SettingsIcon />
-          </button>
+          <div className="nav-rail-items">
+            <button
+              type="button"
+              className="nav-rail-item"
+              aria-label="Split view"
+              title="Split view (Cmd/Ctrl + \)"
+              disabled={!canSplit}
+              onClick={onSplitView}
+            >
+              <PanelIcon />
+            </button>
+
+            <button
+              type="button"
+              className="nav-rail-item"
+              aria-label="Settings"
+              onClick={onOpenSettings}
+            >
+              <SettingsIcon />
+            </button>
+          </div>
         </nav>
       </div>
     </div>
