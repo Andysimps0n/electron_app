@@ -1,0 +1,54 @@
+/* ==========================================================================
+   Global
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font: var(--body-base);
+  color: var(--black-500);
+  background: var(--bg-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  height: 100vh;
+}
+
+.icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.icon :is(path, rect, line, circle, polyline) {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--icon-weight, 2);
+}
+.app {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+}
+
+.app-body {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 0;
+  padding-top: var(--layout-top);
+}
+
+button {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}

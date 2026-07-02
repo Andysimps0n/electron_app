@@ -11,7 +11,8 @@ import {
   VolumeLowIcon,
   WavesIcon,
   WhiteNoiseIcon,
-} from './icons'
+} from '../../shared/icons'
+import './music.css'
 
 const MIX_STORAGE_KEY = 'music-mix'
 const DEFAULT_VOLUME = 0.6

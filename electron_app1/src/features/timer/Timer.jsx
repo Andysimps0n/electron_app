@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { PanelIcon } from './icons'
-import { useCalendarTodos } from '../hooks/useCalendarTodos'
-import { formatTodoTime } from '../utils/calendarTodos'
+import { PanelIcon } from '../../shared/icons'
+import TimerSidebar from './TimerSidebar'
+import '../../shared/sidebar.css'
+import './timer.css'
 
 const POMODORO_PRESETS = [
   { id: '25-5', label: '25 / 5', focusSeconds: 25 * 60, breakSeconds: 5 * 60 },
@@ -33,147 +34,6 @@ function formatClockDate(date) {
     month: 'long',
     day: 'numeric',
   })
-}
-
-function TimerSidebar({
-  activeMode,
-  activePresetId,
-  onSelectFocus,
-  onSelectClock,
-}) {
-  const { todos, addTodo, toggleTodo, deleteTodo } = useCalendarTodos()
-  const [todoDraft, setTodoDraft] = useState('')
-
-  function commitTodoDraft(text) {
-    const trimmed = text.trim()
-    if (!trimmed) {
-      return
-    }
-
-    addTodo(trimmed)
-  }
-
-  function handleTodoKeyDown(event) {
-    if (event.key !== 'Enter' || event.shiftKey) {
-      return
-    }
-
-    event.preventDefault()
-    commitTodoDraft(todoDraft)
-    setTodoDraft('')
-  }
-
-  function handleTodoPaste(event) {
-    const pasted = event.clipboardData.getData('text')
-    if (!pasted.includes('\n')) {
-      return
-    }
-
-    event.preventDefault()
-    pasted
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .forEach((line) => addTodo(line))
-    setTodoDraft('')
-  }
-
-  return (
-    <aside className="sidebar timer-sidebar">
-      <div className="timer-sidebar-modes">
-        <section className="timer-sidebar-section">
-          <h2 className="sidebar-title timer-sidebar-section-title">Focus</h2>
-          <ul className="timer-sidebar-list">
-            {POMODORO_PRESETS.map((preset) => (
-              <li key={preset.id}>
-                <button
-                  type="button"
-                  className={`timer-sidebar-item${
-                    activeMode === 'focus' && activePresetId === preset.id
-                      ? ' timer-sidebar-item-active'
-                      : ''
-                  }`}
-                  onClick={() => onSelectFocus(preset)}
-                >
-                  <span className="timer-sidebar-item-label">{preset.label}</span>
-                  <span className="timer-sidebar-item-meta">focus / break</span>
-                </button>
-              </li>
-            ))}
-              <button
-                type="button"
-                className={`timer-sidebar-item${
-                  activeMode === 'clock' ? ' timer-sidebar-item-active' : ''
-                }`}
-                onClick={onSelectClock}
-              >
-                <span className="timer-sidebar-item-label">Desk Clock</span>
-                <span className="timer-sidebar-item-meta">digital or analog</span>
-              </button>
-          </ul>
-        </section>
-
-      </div>
-
-      <section className="sidebar-todos">
-        <h3 className="sidebar-todos-title">Tasks</h3>
-
-        {todos.length > 0 && (
-          <ul className="sidebar-todos-list">
-            {todos.map((todo) => (
-              <li
-                key={todo.id}
-                className={`sidebar-todos-item${
-                  todo.done ? ' sidebar-todos-item-done' : ''
-                }`}
-              >
-                <label className="sidebar-todos-check">
-                  <input
-                    type="checkbox"
-                    checked={todo.done}
-                    onChange={() => toggleTodo(todo.id)}
-                    aria-label={`Mark "${todo.text}" as ${
-                      todo.done ? 'incomplete' : 'complete'
-                    }`}
-                  />
-                  <span className="sidebar-todos-checkmark" />
-                </label>
-                <div className="sidebar-todos-content">
-                  <span className="sidebar-todos-text">{todo.text}</span>
-                  {todo.timeMinute != null && (
-                    <span className="sidebar-todos-time">
-                      {formatTodoTime(todo.timeMinute)}
-                    </span>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  className="sidebar-todos-delete-btn"
-                  aria-label={`Delete "${todo.text}"`}
-                  onClick={() => deleteTodo(todo.id)}
-                >
-                  ×
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <textarea
-          className={`sidebar-todos-empty${
-            todos.length === 0 ? ' sidebar-todos-empty-solo' : ''
-          }`}
-          placeholder="Add a task..."
-          value={todoDraft}
-          rows={todos.length > 0 ? 1 : 4}
-          aria-label="Add tasks"
-          onChange={(event) => setTodoDraft(event.target.value)}
-          onKeyDown={handleTodoKeyDown}
-          onPaste={handleTodoPaste}
-        />
-      </section>
-    </aside>
-  )
 }
 
 function FocusDisplay({

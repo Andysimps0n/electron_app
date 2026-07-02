@@ -1,0 +1,347 @@
+/* ==========================================================================
+   Timer
+   ========================================================================== */
+
+.timer {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg-main);
+}
+
+.timer-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.timer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: var(--border-width) solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.timer-sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--black-500);
+  cursor: pointer;
+}
+
+.timer-sidebar-toggle:hover:not(.timer-sidebar-toggle-active) {
+  background: var(--black-050);
+}
+
+.timer-display-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 8px;
+}
+
+.timer-display-toggle-btn {
+  font: var(--body-sm-bold);
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--black-300);
+  cursor: pointer;
+}
+
+.timer-display-toggle-btn:hover:not(.timer-display-toggle-btn-active) {
+  color: var(--black-500);
+  background: var(--black-050);
+}
+
+.timer-display-toggle-btn-active {
+  background: var(--accent-green);
+  color: var(--event-text);
+}
+
+.timer-sidebar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.timer-sidebar-modes {
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.timer-sidebar-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.timer-sidebar-section-title {
+  padding: 12px 12px 8px;
+}
+
+.timer-sidebar-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px 12px;
+}
+
+.timer-sidebar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: var(--black-500);
+}
+
+.timer-sidebar-item-label {
+  font: var(--body-base-bold);
+}
+
+.timer-sidebar-item-meta {
+  font: var(--body-sm);
+  color: var(--black-300);
+}
+
+.timer-sidebar-item-active .timer-sidebar-item-meta,
+.timer-sidebar-item-active .timer-sidebar-item-label {
+  color: inherit;
+}
+
+.timer-sidebar-item:hover:not(.timer-sidebar-item-active) {
+  background: var(--black-050);
+}
+
+.timer-sidebar-item-active,
+.timer-sidebar-item-active:hover {
+  background: var(--accent-green);
+  color: var(--event-text);
+}
+
+.focus-display {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px;
+  min-height: 0;
+}
+
+.focus-display-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.focus-display-phase {
+  font: var(--title-base);
+  color: var(--accent-green);
+}
+
+.focus-display-break .focus-display-phase {
+  color: var(--black-500);
+}
+
+.focus-display-session {
+  font: var(--body-sm);
+  color: var(--black-300);
+}
+
+.focus-display-ring {
+  position: relative;
+  width: 260px;
+  height: 260px;
+}
+
+.focus-display-progress {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.focus-display-track {
+  fill: none;
+  stroke: var(--deep);
+  stroke-width: 4;
+}
+
+.focus-display-fill {
+  fill: none;
+  stroke: var(--accent-green);
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.focus-display-break .focus-display-fill {
+  stroke: var(--black-500);
+}
+
+.focus-display-time {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 52px/1 var(--font-mono);
+  color: var(--black-500);
+  letter-spacing: 0.04em;
+}
+
+.focus-display-status {
+  margin: 0;
+  font: var(--title-sm);
+  color: var(--accent-green);
+  text-align: center;
+}
+
+.focus-display-hint {
+  margin: 0;
+  max-width: 360px;
+  font: var(--body-base);
+  color: var(--black-300);
+  text-align: center;
+}
+
+.focus-display-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.focus-display-btn {
+  font: var(--body-base-bold);
+  padding: 10px 20px;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-main);
+  color: var(--black-500);
+  cursor: pointer;
+  min-width: 96px;
+}
+
+/* .focus-display-btn:hover:not(:disabled) {
+  background: var(--black-500);
+} */
+
+.focus-display-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.focus-display-btn-primary {
+  background: var(--accent-green);
+  border-color: var(--accent-green);
+  color: var(--event-text);
+}
+
+.focus-display-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.focus-display-btn-ghost {
+  background: transparent;
+}
+
+.desk-clock {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  min-height: 0;
+}
+
+.desk-clock-digital {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.desk-clock-time {
+  font: 700 72px/1 var(--font-mono);
+  color: var(--black-500);
+  letter-spacing: 0.04em;
+}
+
+.desk-clock-date {
+  margin: 0;
+  font: var(--body-lg);
+  color: var(--black-300);
+  text-align: center;
+}
+
+.desk-clock-analog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.desk-clock-face {
+  width: 280px;
+  height: 280px;
+}
+
+.desk-clock-dial {
+  fill: none;
+  stroke: var(--deep);
+  stroke-width: 4;
+}
+
+.desk-clock-tick {
+  stroke: var(--black-300);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.desk-clock-hand {
+  stroke-linecap: round;
+  transform-origin: 60px 60px;
+}
+
+.desk-clock-hand-hour {
+  stroke: var(--black-500);
+  stroke-width: 4;
+}
+
+.desk-clock-hand-minute {
+  stroke: var(--black-500);
+  stroke-width: 3;
+}
+
+.desk-clock-hand-second {
+  stroke: var(--accent-green);
+  stroke-width: 1.5;
+}
+
+.desk-clock-center {
+  fill: var(--accent-green);
+}
+

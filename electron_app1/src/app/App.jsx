@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import NavRail from './components/NavRail'
-import SplitView from './components/SplitView'
+import NavRail from './NavRail'
+import SplitView from './SplitView'
 import {
   canSplit,
   closePanel,
@@ -10,7 +10,8 @@ import {
   setActivePanel,
   setPanelView,
   splitView,
-} from './utils/splitView'
+} from '../utils/splitView'
+import './shell.css'
 
 function App() {
   // The whole split-view layout lives in one state object. App is the single

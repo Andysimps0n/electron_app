@@ -1,0 +1,69 @@
+.month-sidebar {
+  width: 0;
+  overflow: hidden;
+  flex-shrink: 0;
+  border-right: 0 solid var(--border-color);
+  transition:
+    width 0.2s ease,
+    border-width 0.2s ease;
+}
+
+.month-sidebar-open {
+  width: 260px;
+  border-right-width: var(--border-width);
+}
+
+.month-sidebar > .sidebar {
+  width: 260px;
+}
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--bg-main);
+  color: var(--black-500);
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+.sidebar-month {
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.sidebar-title {
+  font: var(--title-sm);
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--black-500);
+}
+
+.sidebar-panel-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--black-300);
+  cursor: pointer;
+}
+
+.sidebar-panel-toggle:hover {
+  color: var(--black-500);
+  background: var(--black-100);
+}

@@ -1,0 +1,209 @@
+/* ==========================================================================
+   Split view
+
+   Layout is a flex row of panels, each `flex: 1` so they share the width
+   evenly. Dividers sit between panels and are the seam where a future
+   draggable resize handle would attach.
+   ========================================================================== */
+
+.split-view {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  background: var(--bg-main);
+}
+
+.split-panel {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-main);
+  position: relative;
+}
+
+/* Active-panel indicator: an inset outline drawn on top of the panel. Using a
+   pseudo-element means it never shifts the layout the way a real border would. */
+.split-panel-active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: inset 0 0 0 2px var(--bg-timeblock);
+}
+
+.split-divider {
+  flex: 0 0 var(--border-width);
+  background: var(--border-color);
+}
+
+.split-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0 6px 0 12px;
+  border-bottom: var(--border-width) solid var(--border-color);
+  background: var(--bg-main);
+}
+
+.split-panel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--black-300);
+  font: var(--body-sm);
+}
+
+.split-panel-active .split-panel-title {
+  color: var(--black-500);
+}
+
+.split-panel-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--black-300);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.split-panel-close:hover {
+  color: var(--black-500);
+  background: var(--black-100);
+}
+
+.split-panel-body {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Placeholder shown in a panel with no view assigned yet. */
+.empty-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.empty-panel-title {
+  margin: 0;
+  color: var(--black-300);
+  font: var(--body-base);
+}
+
+.empty-panel-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 200px;
+}
+
+.empty-panel-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-main);
+  color: var(--black-400);
+  font: var(--body-sm);
+  cursor: pointer;
+}
+
+.empty-panel-btn:hover {
+  color: var(--black-500);
+  background: var(--black-100);
+  border-color: var(--accent-green);
+}
+/* ==========================================================================
+   Nav rail
+   ========================================================================== */
+
+.nav-rail-shell {
+  --nav-rail-width: 56px;
+  position: relative;
+  flex-shrink: 0;
+  align-self: stretch;
+  width: var(--nav-rail-width);
+  overflow: visible;
+  border-right: var(--border-width) solid var(--border-color);
+  background: var(--bg-main);
+}
+
+.nav-rail-shell-clip {
+  height: 100%;
+  overflow: hidden;
+}
+
+.nav-rail {
+  width: var(--nav-rail-width);
+  background: var(--bg-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  height: 100%;
+}
+
+.nav-rail-items {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.nav-rail-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--black-300);
+  background: transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.nav-rail-item:hover:not(.nav-rail-item-active):not(:disabled) {
+  color: var(--black-500);
+  background: var(--black-100);
+}
+
+.nav-rail-item:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.nav-rail-item-active,
+.nav-rail-item-active:hover {
+  background: var(--accent-green);
+  color: var(--event-text);
+}
+
+.nav-rail-label {
+  display: none;
+}

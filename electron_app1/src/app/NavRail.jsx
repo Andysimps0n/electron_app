@@ -5,7 +5,7 @@ import {
   PanelIcon,
   SettingsIcon,
   TimerIcon,
-} from './icons'
+} from '../shared/icons'
 
 const NAV_ITEMS = [
   { id: 'calendar', label: 'Calendar', Icon: CalendarIcon },

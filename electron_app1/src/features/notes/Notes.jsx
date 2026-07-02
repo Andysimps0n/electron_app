@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { PanelIcon } from './icons'
-import { handleListKeyDown } from '../utils/noteListEditor'
+import { PanelIcon } from '../../shared/icons'
+import { handleListKeyDown } from '../../utils/noteListEditor'
+import '../../shared/sidebar.css'
+import './notes.css'
 
 const NOTES_STORAGE_KEY = 'notes'
 

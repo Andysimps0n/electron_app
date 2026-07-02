@@ -11,11 +11,11 @@
  * shared props it cares about. This keeps the panel components from having to
  * know that, for example, Calendar needs `settingsOpen`.
  */
-import Calendar from '../components/Calendar'
-import Music from '../components/Music'
-import Notes from '../components/Notes'
-import Timer from '../components/Timer'
-import { CalendarIcon, MusicIcon, NoteIcon, TimerIcon } from '../components/icons'
+import Calendar from '../features/calendar/Calendar'
+import Music from '../features/music/Music'
+import Notes from '../features/notes/Notes'
+import Timer from '../features/timer/Timer'
+import { CalendarIcon, MusicIcon, NoteIcon, TimerIcon } from '../shared/icons'
 
 export const VIEW_REGISTRY = {
   timer: {

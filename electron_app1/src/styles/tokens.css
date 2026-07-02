@@ -1,0 +1,70 @@
+/* ==========================================================================
+   Design tokens
+   ========================================================================== */
+
+:root {
+  /* ----------------------------------------------------------------------
+     Palette: the ONLY four colors used in the app.
+     Everything below is built from these.
+     ---------------------------------------------------------------------- */
+  --black: hsl(0, 0%, 0%);            /* true black: main background + darkest surfaces */
+  --deep: #002214;             /* medium darkness: elevated surfaces, borders, hovers */
+  /* --deep: #003920;             medium darkness: elevated surfaces, borders, hovers */
+  --accent: rgb(112, 243, 80); /* accent: buttons + important, readable highlights */
+  --cream: #fff7e4;            /* light text */
+
+  /* Cream at lower opacity for muted/secondary text. Still only the cream
+     color, just dimmed, so we keep text hierarchy without a 5th color. */
+  --cream-muted: rgba(255, 247, 228, 0.55);
+
+  /* ----------------------------------------------------------------------
+     Semantic tokens mapped onto the palette.
+     ---------------------------------------------------------------------- */
+  --bg-main: var(--black);
+  --bg-elevated: var(--deep);
+  --bg-input: var(--deep);
+  --bg-timeblock :rgb(89, 199, 62);
+  --black-500: var(--cream);       /* primary text */
+  --black-400: var(--cream);       /* strong text */
+  --black-300: var(--cream-muted); /* muted / secondary text */
+  --black-200: var(--deep);        /* borders / outlines */
+  --black-100: var(--deep);        /* hover surfaces */
+  --black-050: var(--deep);        /* subtle hover surfaces */
+
+  --accent-green: var(--accent);
+  --accent-green-dim: var(--accent);
+  --accent-green-muted: rgba(112, 243, 80, 0.12);
+  --event-text: var(--black);      /* text on top of accent-colored surfaces */
+
+  --border-width: 1px;
+  --border-color: #1e1e1e;
+  --grid-line: #1e1e1e;
+  --surface-dark: var(--black);
+  --surface-dark-2: var(--deep);
+  --surface-dark-3: var(--deep);
+  --text-inverse: var(--black);
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --title-lg: 700 28px/1.2 var(--font-sans);
+  --title-base: 600 18px/1.3 var(--font-sans);
+  --title-sm: 600 15px/1.3 var(--font-sans);
+
+  --body-lg: 400 16px/1.5 var(--font-sans);
+  --body-base: 400 14px/1.5 var(--font-sans);
+  --body-sm: 400 12px/1.5 var(--font-sans);
+
+  --body-lg-bold: 600 16px/1.5 var(--font-sans);
+  --body-base-bold: 600 14px/1.5 var(--font-sans);
+  --body-sm-bold: 600 12px/1.5 var(--font-sans);
+
+  --body-lg-caps: 500 16px/1.5 var(--font-sans);
+  --body-base-caps: 500 14px/1.5 var(--font-sans);
+  --body-sm-caps: 500 11px/1.5 var(--font-sans);
+
+  --icon-weight: 1.75;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --layout-top: 0px;
+}
