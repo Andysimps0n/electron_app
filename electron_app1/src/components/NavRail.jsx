@@ -1,5 +1,6 @@
 import {
   CalendarIcon,
+  MusicIcon,
   NoteIcon,
   PanelIcon,
   SettingsIcon,
@@ -10,6 +11,7 @@ const NAV_ITEMS = [
   { id: 'calendar', label: 'Calendar', Icon: CalendarIcon },
   { id: 'notes', label: 'Notes', Icon: NoteIcon },
   { id: 'timer', label: 'Timer', Icon: TimerIcon },
+  { id: 'music', label: 'Music', Icon: MusicIcon },
 ]
 
 export default function NavRail({

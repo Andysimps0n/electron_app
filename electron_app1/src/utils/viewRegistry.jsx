@@ -12,9 +12,10 @@
  * know that, for example, Calendar needs `settingsOpen`.
  */
 import Calendar from '../components/Calendar'
+import Music from '../components/Music'
 import Notes from '../components/Notes'
 import Timer from '../components/Timer'
-import { CalendarIcon, NoteIcon, TimerIcon } from '../components/icons'
+import { CalendarIcon, MusicIcon, NoteIcon, TimerIcon } from '../components/icons'
 
 export const VIEW_REGISTRY = {
   timer: {
@@ -40,6 +41,12 @@ export const VIEW_REGISTRY = {
     Icon: NoteIcon,
     render: () => <Notes />,
   },
+  music: {
+    id: 'music',
+    title: 'Music',
+    Icon: MusicIcon,
+    render: () => <Music />,
+  },
 }
 
 // Ordered list, used to build the sidebar and the EmptyPanel placeholder so
@@ -48,6 +55,7 @@ export const VIEW_LIST = [
   VIEW_REGISTRY.timer,
   VIEW_REGISTRY.calendar,
   VIEW_REGISTRY.notes,
+  VIEW_REGISTRY.music,
 ]
 
 // Returns null for unknown types (e.g. the 'empty' placeholder).
