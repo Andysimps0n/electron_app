@@ -350,7 +350,7 @@ export default function WeekView({
     }
   }, [editorSelection, editingEventId])
 
-  function getPointerSlot(event) {
+  function getPointerSlot(event, { currentWeekOnly = false } = {}) {
     const viewport = daysBodyViewportRef.current
     if (!viewport) {
       return null
@@ -371,8 +371,16 @@ export default function WeekView({
     let dayIndex = null
     let weekOffset = 0
 
-    for (let panelIndex = 0; panelIndex < track.children.length; panelIndex++) {
+    // Prefer the center week panel so partial horizontal scroll does not
+    // mis-detect adjacent weeks during vertical drag interactions.
+    const panelSearchOrder = currentWeekOnly ? [1] : [1, 0, 2]
+
+    for (const panelIndex of panelSearchOrder) {
       const panel = track.children[panelIndex]
+      if (!panel) {
+        continue
+      }
+
       const columns = panel.querySelectorAll(':scope > .week-view-day-column')
 
       for (let index = 0; index < columns.length; index++) {
@@ -417,6 +425,10 @@ export default function WeekView({
       x: event.clientX - viewportRect.left,
       y,
     }
+  }
+
+  function getCurrentWeekPointerSlot(event) {
+    return getPointerSlot(event, { currentWeekOnly: true })
   }
 
   function resolvePointerSlot(event) {
@@ -509,7 +521,7 @@ export default function WeekView({
       return
     }
 
-    const startSlot = resolvePointerSlot(event)
+    const startSlot = getCurrentWeekPointerSlot(event)
     if (!startSlot) {
       return
     }
@@ -538,7 +550,7 @@ export default function WeekView({
       interaction.mode === 'resize-selection' ||
       interaction.mode === 'resize-event'
     ) {
-      const currentSlot = resolvePointerSlot(event)
+      const currentSlot = getCurrentWeekPointerSlot(event)
       if (!currentSlot || currentSlot.dayIndex !== interaction.selection.dayIndex) {
         return
       }
@@ -627,12 +639,18 @@ export default function WeekView({
 
     const dx = event.clientX - interaction.startX
     const dy = event.clientY - interaction.startY
+    const verticalSelectIntent =
+      interaction.mode === 'selecting' ||
+      (interaction.mode === 'pending' &&
+        Math.abs(dy) > 4 &&
+        Math.abs(dy) >= Math.abs(dx))
 
     if (
-      interaction.mode === 'week-scroll' ||
-      (interaction.mode === 'pending' &&
-        Math.abs(dx) > 8 &&
-        Math.abs(dx) > Math.abs(dy) * HORIZONTAL_SCROLL_DOMINANCE)
+      !verticalSelectIntent &&
+      (interaction.mode === 'week-scroll' ||
+        (interaction.mode === 'pending' &&
+          Math.abs(dx) > 8 &&
+          Math.abs(dx) > Math.abs(dy) * HORIZONTAL_SCROLL_DOMINANCE))
     ) {
       if (interaction.mode === 'pending') {
         interaction.mode = 'week-scroll'
@@ -646,7 +664,7 @@ export default function WeekView({
       return
     }
 
-    const currentSlot = resolvePointerSlot(event)
+    const currentSlot = getCurrentWeekPointerSlot(event)
     if (!currentSlot || currentSlot.dayIndex !== interaction.startSlot.dayIndex) {
       return
     }
@@ -702,7 +720,7 @@ export default function WeekView({
       return
     }
 
-    const endSlot = resolvePointerSlot(event) ?? interaction.startSlot
+    const endSlot = getCurrentWeekPointerSlot(event) ?? interaction.startSlot
     const selection =
       draftSelection ?? buildSelection(interaction.startSlot, endSlot)
 

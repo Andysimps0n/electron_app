@@ -24,18 +24,6 @@
   flex-direction: column;
   overflow: hidden;
   background: var(--bg-main);
-  position: relative;
-}
-
-/* Active-panel indicator: an inset outline drawn on top of the panel. Using a
-   pseudo-element means it never shifts the layout the way a real border would. */
-.split-panel-active::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 10;
-  box-shadow: inset 0 0 0 2px var(--bg-timeblock);
 }
 
 .split-divider {
@@ -58,12 +46,15 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
   color: var(--black-300);
   font: var(--body-sm);
 }
 
 .split-panel-active .split-panel-title {
-  color: var(--black-500);
+  color: var(--event-text);
+  background: var(--bg-timeblock);
 }
 
 .split-panel-close {
