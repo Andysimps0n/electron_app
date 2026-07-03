@@ -53,7 +53,13 @@ export default function Panel({
 
       <div className="split-panel-body">
         {view ? (
-          view.render(viewContext)
+          view.render({
+            ...viewContext,
+            // Narrow split panels start with the month sidebar folded; single-panel
+            // layout keeps it open. Only affects initial mount — toggling later is
+            // up to the user.
+            defaultSidebarOpen: !showChrome,
+          })
         ) : (
           <EmptyPanel onPickView={onAssignView} />
         )}

@@ -94,6 +94,16 @@
   overflow: hidden;
 }
 
+/* Views rendered inside a panel must be allowed to shrink below their
+   content width; otherwise wide grids (calendar week view, music cards)
+   push the split layout past the viewport. */
+.split-panel-body > * {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+}
+
 /* Placeholder shown in a panel with no view assigned yet. */
 .empty-panel {
   flex: 1;

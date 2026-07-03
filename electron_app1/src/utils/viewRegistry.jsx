@@ -9,7 +9,9 @@
  *
  * `render(context)` receives a small context object so a view can pull only the
  * shared props it cares about. This keeps the panel components from having to
- * know that, for example, Calendar needs `settingsOpen`.
+ * know that, for example, Calendar needs `settingsOpen`. Panel also injects
+ * `defaultSidebarOpen` (false in split layout, true when a single panel fills
+ * the screen).
  */
 import Calendar from '../features/calendar/Calendar'
 import Music from '../features/music/Music'
@@ -22,7 +24,9 @@ export const VIEW_REGISTRY = {
     id: 'timer',
     title: 'Timer',
     Icon: TimerIcon,
-    render: () => <Timer />,
+    render: (context) => (
+      <Timer defaultSidebarOpen={context.defaultSidebarOpen} />
+    ),
   },
   calendar: {
     id: 'calendar',
@@ -32,6 +36,7 @@ export const VIEW_REGISTRY = {
       <Calendar
         settingsOpen={context.settingsOpen}
         onSettingsOpenChange={context.onSettingsOpenChange}
+        defaultSidebarOpen={context.defaultSidebarOpen}
       />
     ),
   },
@@ -39,7 +44,9 @@ export const VIEW_REGISTRY = {
     id: 'notes',
     title: 'Notes',
     Icon: NoteIcon,
-    render: () => <Notes />,
+    render: (context) => (
+      <Notes defaultSidebarOpen={context.defaultSidebarOpen} />
+    ),
   },
   music: {
     id: 'music',

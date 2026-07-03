@@ -149,6 +149,29 @@ export function RaindropIcon({ width = 20, height = 20, weight = 2 }) {
   )
 }
 
+export function FireIcon({ width = 20, height = 20, weight = 2 }) {
+  return (
+    <Icon viewBox="0 0 20 20" width={width} height={height} weight={weight}>
+      <path
+        d="M10 17c3.5 0 5.5-2.5 5.5-5.5 0-3-2.5-5-4-7.5-.5 2-1.5 3-3 4C6.5 9.5 4.5 11.5 4.5 14 4.5 16.2 6.5 17 10 17Z"
+        strokeLinejoin="round"
+      />
+      <path d="M10 17v-3" strokeLinecap="round" />
+    </Icon>
+  )
+}
+
+export function PeopleTalkingIcon({ width = 20, height = 20, weight = 2 }) {
+  return (
+    <Icon viewBox="0 0 20 20" width={width} height={height} weight={weight}>
+      <circle cx="6.5" cy="7" r="2.5" />
+      <circle cx="13.5" cy="7" r="2.5" />
+      <path d="M3.5 13c0-1.8 1.3-3 3-3s3 1.2 3 3" strokeLinecap="round" />
+      <path d="M10.5 13c0-1.8 1.3-3 3-3s3 1.2 3 3" strokeLinecap="round" />
+    </Icon>
+  )
+}
+
 export function VolumeLowIcon({ width = 16, height = 16, weight = 2 }) {
   return (
     <Icon viewBox="0 0 20 20" width={width} height={height} weight={weight}>

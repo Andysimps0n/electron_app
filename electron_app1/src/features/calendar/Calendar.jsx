@@ -7,14 +7,18 @@ import { isSameMonth } from '../../utils/dateUtils'
 import '../../shared/sidebar.css'
 import './calendar.css'
 
-export default function Calendar({ settingsOpen, onSettingsOpenChange }) {
+export default function Calendar({
+  settingsOpen,
+  onSettingsOpenChange,
+  defaultSidebarOpen = true,
+}) {
   const today = new Date()
   const [selectedDate, setSelectedDate] = useState(today)
   const [viewedMonth, setViewedMonth] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1),
   )
   const [view, setView] = useState('week')
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(defaultSidebarOpen)
   const [reverseScroll, setReverseScroll] = useState(loadReverseScrollSetting)
 
   const settingsVisible = settingsOpen ?? false

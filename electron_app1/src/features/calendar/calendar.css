@@ -10,9 +10,25 @@
 .calendar {
   display: flex;
   flex: 1;
+  min-width: 0;
   min-height: 0;
+  width: 100%;
   overflow: hidden;
+  position: relative;
+  container-type: inline-size;
   background: var(--bg-main);
+}
+
+/* In a narrow panel, keep the month sidebar as an overlay so the week grid
+   keeps the full panel width instead of sidebar + grid overflowing. */
+@container (max-width: 680px) {
+  .calendar .month-sidebar-open {
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: 5;
+    width: 260px;
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.45);
+  }
 }
 .sidebar-month {
   flex-shrink: 0;
@@ -129,6 +145,8 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   background: var(--bg-main);
 }
 
@@ -137,6 +155,8 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 16px;
+  min-width: 0;
+  flex-shrink: 0;
   padding: 16px 24px;
   border-bottom: var(--border-width) solid var(--border-color);
 }
@@ -203,6 +223,9 @@
   align-items: center;
   gap: 16px;
   justify-self: center;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .week-view-nav {
@@ -228,6 +251,10 @@
   margin: 0;
   font-size: 16px;
   font-weight: 500;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .week-view-clock {
@@ -327,7 +354,7 @@
   display: grid;
   grid-template-columns: 64px 1fr;
   grid-template-rows: auto 1fr;
-  min-width: 700px;
+  min-width: min(700px, 100%);
 }
 
 .week-view-corner {
@@ -837,3 +864,7 @@
   cursor: pointer;
 }
 
+.split-view-multi .week-view-header {
+  padding: 12px 16px;
+  gap: 12px;
+}

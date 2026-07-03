@@ -179,10 +179,10 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
   )
 }
 
-export default function Notes() {
+export default function Notes({ defaultSidebarOpen = true }) {
   const [notes, setNotes] = useState(loadNotes)
   const [activeNoteId, setActiveNoteId] = useState(() => notes[0]?.id ?? null)
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(defaultSidebarOpen)
 
   const activeNote = notes.find((note) => note.id === activeNoteId) ?? notes[0]
 

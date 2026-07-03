@@ -24,7 +24,7 @@ export default function SplitView({
   const showChrome = panels.length > 1
 
   return (
-    <div className="split-view">
+    <div className={`split-view${showChrome ? ' split-view-multi' : ''}`}>
       {panels.map((panel, index) => (
         <Fragment key={panel.id}>
           {index > 0 && <div className="split-divider" aria-hidden="true" />}

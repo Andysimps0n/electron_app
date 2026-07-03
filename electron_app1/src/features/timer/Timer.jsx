@@ -207,8 +207,8 @@ function DeskClock({ displayMode, now }) {
   )
 }
 
-export default function Timer() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+export default function Timer({ defaultSidebarOpen = true }) {
+  const [sidebarOpen, setSidebarOpen] = useState(defaultSidebarOpen)
   const [activeMode, setActiveMode] = useState('focus')
   const [activePresetId, setActivePresetId] = useState(DEFAULT_PRESET.id)
   const [phase, setPhase] = useState('focus')
