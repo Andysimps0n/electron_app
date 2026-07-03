@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { PanelIcon } from '../../shared/icons'
 import {
   addDays,
@@ -39,6 +39,7 @@ export default function WeekView({
   const daysBodyViewportRef = useRef(null)
   const gridWrapperRef = useRef(null)
   const weekViewRef = useRef(null)
+  const eventEditorRef = useRef(null)
   const interactionRef = useRef(null)
   const selectedDateRef = useRef(selectedDate)
   const weekScrollOffsetRef = useRef(0)
@@ -52,6 +53,8 @@ export default function WeekView({
   const [editorSelection, setEditorSelection] = useState(null)
   const [editingEventId, setEditingEventId] = useState(null)
   const [eventTitle, setEventTitle] = useState('')
+  const [eventDetails, setEventDetails] = useState('')
+  const [editorFlipY, setEditorFlipY] = useState(false)
   const [events, setEvents] = useState([])
   const [now, setNow] = useState(() => new Date())
   const [weekScrollOffset, setWeekScrollOffset] = useState(0)
@@ -119,6 +122,23 @@ export default function WeekView({
     return () => window.clearInterval(intervalId)
   }, [])
 
+  useLayoutEffect(() => {
+    if (!editorSelection) {
+      setEditorFlipY(false)
+      return
+    }
+
+    const editor = eventEditorRef.current
+    if (!editor) {
+      return
+    }
+
+    const selectionTop =
+      ((editorSelection.startMinute - START_HOUR * 60) / 60) * CELL_HEIGHT
+    const gridHeight = (END_HOUR - START_HOUR) * CELL_HEIGHT
+    setEditorFlipY(selectionTop + editor.offsetHeight > gridHeight)
+  }, [editorSelection, eventTitle, eventDetails, editingEventId])
+
   function getScrollDelta(rawDelta) {
     return reverseScrollRef.current ? -rawDelta : rawDelta
   }
@@ -162,6 +182,7 @@ export default function WeekView({
     setEditorSelection(null)
     setDraftSelection(null)
     setEventTitle('')
+    setEventDetails('')
   }
 
   function handleDeleteEvent() {
@@ -183,6 +204,7 @@ export default function WeekView({
       endMinute: calendarEvent.endMinute,
     })
     setEventTitle(calendarEvent.title)
+    setEventDetails(calendarEvent.details ?? '')
     setDraftSelection(null)
   }
 
@@ -215,13 +237,14 @@ export default function WeekView({
       next += weekWidth
     }
 
-    weekScrollOffsetRef.current = next
-    setWeekScrollOffset(next)
-
     if (weekDelta !== 0) {
       onWeekChange(addDays(selectedDateRef.current, weekDelta))
       dismissEditor()
+      next = 0
     }
+
+    weekScrollOffsetRef.current = next
+    setWeekScrollOffset(next)
   }
 
   useEffect(() => {
@@ -334,7 +357,6 @@ export default function WeekView({
     }
 
     const viewportRect = viewport.getBoundingClientRect()
-    const x = event.clientX - viewportRect.left
     const y = event.clientY - viewportRect.top
 
     if (y < 0) {
@@ -342,25 +364,35 @@ export default function WeekView({
     }
 
     const track = viewport.querySelector('.week-view-days-track')
-    const currentWeekPanel = track?.children?.[1]
-    if (!currentWeekPanel) {
+    if (!track) {
       return null
     }
 
-    const columns = currentWeekPanel.querySelectorAll(
-      ':scope > .week-view-day-column',
-    )
     let dayIndex = null
+    let weekOffset = 0
 
-    for (let index = 0; index < columns.length; index++) {
-      const rect = columns[index].getBoundingClientRect()
-      const isLastColumn = index === columns.length - 1
+    for (let panelIndex = 0; panelIndex < track.children.length; panelIndex++) {
+      const panel = track.children[panelIndex]
+      const columns = panel.querySelectorAll(':scope > .week-view-day-column')
 
-      if (
-        event.clientX >= rect.left &&
-        (event.clientX < rect.right || isLastColumn)
-      ) {
-        dayIndex = index
+      for (let index = 0; index < columns.length; index++) {
+        const rect = columns[index].getBoundingClientRect()
+        const isLastColumn = index === columns.length - 1
+
+        if (
+          event.clientX >= rect.left &&
+          (event.clientX < rect.right || isLastColumn) &&
+          event.clientY >= rect.top &&
+          event.clientY <= rect.bottom
+        ) {
+          dayIndex = index
+          weekOffset = WEEK_OFFSETS[panelIndex] ?? 0
+          break
+        }
+      }
+
+      if (dayIndex != null) {
+        break
       }
     }
 
@@ -381,9 +413,25 @@ export default function WeekView({
     return {
       dayIndex,
       minute,
-      x,
+      weekOffset,
+      x: event.clientX - viewportRect.left,
       y,
     }
+  }
+
+  function resolvePointerSlot(event) {
+    const slot = getPointerSlot(event)
+    if (!slot) {
+      return null
+    }
+
+    if (slot.weekOffset === 0) {
+      return slot
+    }
+
+    onWeekChange(addDays(selectedDateRef.current, slot.weekOffset * 7))
+    resetWeekScroll()
+    return { ...slot, weekOffset: 0 }
   }
 
   function buildSelection(startSlot, endSlot) {
@@ -441,7 +489,7 @@ export default function WeekView({
     return [
       'event-editor',
       selection.dayIndex > 4 && 'event-editor-flip-x',
-      selection.endMinute >= (END_HOUR - 2) * 60 && 'event-editor-flip-y',
+      editorFlipY && 'event-editor-flip-y',
     ]
       .filter(Boolean)
       .join(' ')
@@ -461,7 +509,7 @@ export default function WeekView({
       return
     }
 
-    const startSlot = getPointerSlot(event)
+    const startSlot = resolvePointerSlot(event)
     if (!startSlot) {
       return
     }
@@ -490,7 +538,7 @@ export default function WeekView({
       interaction.mode === 'resize-selection' ||
       interaction.mode === 'resize-event'
     ) {
-      const currentSlot = getPointerSlot(event)
+      const currentSlot = resolvePointerSlot(event)
       if (!currentSlot || currentSlot.dayIndex !== interaction.selection.dayIndex) {
         return
       }
@@ -542,7 +590,7 @@ export default function WeekView({
             : 'drag-selection'
       }
 
-      const currentSlot = getPointerSlot(event)
+      const currentSlot = resolvePointerSlot(event)
       if (!currentSlot) {
         return
       }
@@ -598,7 +646,7 @@ export default function WeekView({
       return
     }
 
-    const currentSlot = getPointerSlot(event)
+    const currentSlot = resolvePointerSlot(event)
     if (!currentSlot || currentSlot.dayIndex !== interaction.startSlot.dayIndex) {
       return
     }
@@ -654,7 +702,7 @@ export default function WeekView({
       return
     }
 
-    const endSlot = getPointerSlot(event) ?? interaction.startSlot
+    const endSlot = resolvePointerSlot(event) ?? interaction.startSlot
     const selection =
       draftSelection ?? buildSelection(interaction.startSlot, endSlot)
 
@@ -670,6 +718,10 @@ export default function WeekView({
   }
 
   function handleResizeSelectionPointerDown(event, edge, selection) {
+    if (event.button !== 0) {
+      return
+    }
+
     event.stopPropagation()
     daysBodyViewportRef.current.setPointerCapture(event.pointerId)
     interactionRef.current = {
@@ -681,12 +733,16 @@ export default function WeekView({
   }
 
   function handleEventPointerDown(pointerEvent, calendarEvent) {
+    if (pointerEvent.button !== 0) {
+      return
+    }
+
     if (pointerEvent.target.closest('.week-view-resize-handle')) {
       return
     }
 
     pointerEvent.stopPropagation()
-    const startSlot = getPointerSlot(pointerEvent)
+    const startSlot = resolvePointerSlot(pointerEvent)
     if (!startSlot) {
       return
     }
@@ -708,12 +764,16 @@ export default function WeekView({
   }
 
   function handleSelectionPointerDown(event, selection) {
+    if (event.button !== 0) {
+      return
+    }
+
     if (event.target.closest('.week-view-resize-handle')) {
       return
     }
 
     event.stopPropagation()
-    const startSlot = getPointerSlot(event)
+    const startSlot = resolvePointerSlot(event)
     if (!startSlot) {
       return
     }
@@ -730,6 +790,10 @@ export default function WeekView({
   }
 
   function handleResizeEventPointerDown(event, edge, calendarEvent) {
+    if (event.button !== 0) {
+      return
+    }
+
     event.stopPropagation()
     daysBodyViewportRef.current.setPointerCapture(event.pointerId)
     interactionRef.current = {
@@ -762,6 +826,7 @@ export default function WeekView({
     setEditorSelection(selection)
     setEditingEventId(null)
     setEventTitle('')
+    setEventDetails('')
   }
 
   function handleSaveEvent() {
@@ -770,6 +835,7 @@ export default function WeekView({
     }
 
     const title = eventTitle.trim() || 'New event'
+    const details = eventDetails.trim()
 
     if (editingEventId) {
       setEvents((currentEvents) =>
@@ -778,6 +844,7 @@ export default function WeekView({
             ? {
                 ...calendarEvent,
                 title,
+                details,
                 dayIndex: editorSelection.dayIndex,
                 startMinute: editorSelection.startMinute,
                 endMinute: editorSelection.endMinute,
@@ -792,6 +859,7 @@ export default function WeekView({
           id: crypto.randomUUID(),
           dateKey: getDateKey(weekDates[editorSelection.dayIndex]),
           title,
+          details,
           ...editorSelection,
         },
       ])
@@ -866,7 +934,9 @@ export default function WeekView({
                   }
                 >
                   <strong>{event.title}</strong>
-                  <span>{formatSelectionRange(event)}</span>
+                  <span>
+                    {event.details?.trim() || formatSelectionRange(event)}
+                  </span>
                 </div>
               ))}
           </div>
@@ -892,12 +962,15 @@ export default function WeekView({
             }
           >
             <strong>{eventTitle.trim() || 'New event'}</strong>
-            <span>{formatSelectionRange(visibleSelection)}</span>
+            <span>
+              {eventDetails.trim() || formatSelectionRange(visibleSelection)}
+            </span>
           </div>
         )}
 
         {weekOffset === 0 && editorSelection && (
           <form
+            ref={eventEditorRef}
             className={getEditorClassName(editorSelection)}
             style={getSelectionStyle(editorSelection)}
             onPointerDown={(event) => event.stopPropagation()}
@@ -927,7 +1000,11 @@ export default function WeekView({
             </div>
             <label className="event-editor-field">
               <span>Note</span>
-              <input placeholder="Memo, URL, or details" />
+              <input
+                value={eventDetails}
+                placeholder="Memo, URL, or details"
+                onChange={(event) => setEventDetails(event.target.value)}
+              />
             </label>
             <div className="event-editor-actions">
               <button

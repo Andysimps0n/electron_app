@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import NavRail from './NavRail'
 import SplitView from './SplitView'
+import MusicPlayerHost from '../features/music/MusicPlayerHost'
 import {
   canSplit,
   closePanel,
@@ -65,6 +66,7 @@ function App() {
 
   return (
     <div className="app">
+      <MusicPlayerHost />
       <div className="app-body">
         <NavRail
           activeView={activeView}

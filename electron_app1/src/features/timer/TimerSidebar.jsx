@@ -49,7 +49,10 @@ export default function TimerSidebar({
 
       </div>
 
-      <TodoList title="Tasks" />
+      <TodoList
+        title="Tasks"
+        placeholder="Add a task...   (Enter to add)"
+      />
     </aside>
   )
 }

@@ -208,6 +208,18 @@ function splitListItem(li) {
     return
   }
 
+  const offset = getCursorOffsetWithin(li)
+
+  // Cursor at the start of the line (next to the checkbox): add a new empty
+  // item below instead of moving all content down into a second checkbox row.
+  if (offset === 0) {
+    const newLi = document.createElement('li')
+    ensureListItemHasPlaceholder(newLi)
+    li.parentElement.insertBefore(newLi, li.nextElementSibling)
+    placeCursorAtStart(newLi)
+    return
+  }
+
   const newLi = document.createElement('li')
   const tailRange = range.cloneRange()
   tailRange.setEnd(li, li.childNodes.length)
@@ -340,4 +352,40 @@ export function handleListKeyDown(editor, event) {
   }
 
   return false
+}
+
+const CHECKLIST_CHECKBOX_WIDTH = 22
+const CHECKLIST_CHECKED_CLASS = 'note-checklist-item-checked'
+
+function getChecklistItemFromNode(node, editorRoot) {
+  let current = node.nodeType === Node.TEXT_NODE ? node.parentElement : node
+
+  while (current && current !== editorRoot) {
+    if (current.tagName === 'LI') {
+      const list = current.closest('ul')
+      if (list?.classList.contains('note-checklist')) {
+        return current
+      }
+      return null
+    }
+    current = current.parentElement
+  }
+
+  return null
+}
+
+export function tryToggleChecklistItem(editor, event) {
+  const listItem = getChecklistItemFromNode(event.target, editor)
+  if (!listItem) {
+    return false
+  }
+
+  const { left } = listItem.getBoundingClientRect()
+  if (event.clientX - left > CHECKLIST_CHECKBOX_WIDTH) {
+    return false
+  }
+
+  event.preventDefault()
+  listItem.classList.toggle(CHECKLIST_CHECKED_CLASS)
+  return true
 }

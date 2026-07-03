@@ -1,4 +1,4 @@
-import { PanelIcon } from '../../shared/icons'
+import { ChevronLeftIcon, ChevronRightIcon, PanelIcon } from '../../shared/icons'
 import TodoList from '../../shared/TodoList'
 import {
   DAY_LABELS,
@@ -15,6 +15,8 @@ export default function CalendarSidebar({
   eventDates,
   sidebarOpen,
   onDateSelect,
+  onPreviousMonth,
+  onNextMonth,
   onToggleSidebar,
 }) {
   const cells = getMonthGrid(viewedMonth.getFullYear(), viewedMonth.getMonth())
@@ -23,7 +25,25 @@ export default function CalendarSidebar({
     <aside className="sidebar">
       <div className="sidebar-month">
         <div className="sidebar-header">
-          <h2 className="sidebar-title">{formatMonthYear(viewedMonth)}</h2>
+          <div className="sidebar-header-month">
+            <button
+              type="button"
+              className="sidebar-nav-btn"
+              aria-label="Previous month"
+              onClick={onPreviousMonth}
+            >
+              <ChevronLeftIcon />
+            </button>
+            <h2 className="sidebar-title">{formatMonthYear(viewedMonth)}</h2>
+            <button
+              type="button"
+              className="sidebar-nav-btn"
+              aria-label="Next month"
+              onClick={onNextMonth}
+            >
+              <ChevronRightIcon />
+            </button>
+          </div>
           <button
             type="button"
             className="sidebar-panel-toggle"

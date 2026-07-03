@@ -17,13 +17,29 @@
   min-height: 0;
 }
 
+.notes-editor-shell {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .notes-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 20px;
+  padding: 14px 24px;
   border-bottom: var(--border-width) solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.notes-profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #2a2a2a;
   flex-shrink: 0;
 }
 
@@ -53,25 +69,54 @@
 .notes-format-toolbar {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 16px;
+  padding: 14px 24px;
+  border-bottom: var(--border-width) solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.notes-format-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notes-format-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--border-color);
+  flex-shrink: 0;
 }
 
 .notes-format-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 36px;
-  padding: 0 10px;
-  border: var(--border-width) solid var(--border-color);
-  border-radius: 8px;
+  border: none;
+  border-radius: 4px;
   background: transparent;
-  color: var(--black-500);
-  font: var(--body-sm-bold);
+  color: var(--black-300);
   cursor: pointer;
+  padding: 0;
+}
+
+.notes-format-btn-text {
+  font: var(--body-sm);
+  letter-spacing: 0.01em;
+}
+
+.notes-format-btn-icon {
+  width: 28px;
+  height: 28px;
+  font: 600 14px/1 var(--font-sans);
 }
 
 .notes-format-btn:hover {
-  background: var(--black-050);
+  color: var(--black-500);
+}
+
+.notes-format-btn:active {
+  color: var(--accent-green);
 }
 
 
@@ -156,7 +201,7 @@
   flex: 1;
   flex-direction: column;
   min-height: 0;
-  padding: 24px 32px 32px;
+  padding: 28px 32px 32px;
   overflow: hidden;
 }
 
@@ -164,16 +209,15 @@
   width: 100%;
   border: none;
   background: transparent;
-  font: var(--title-lg);
+  font: 700 32px/1.2 var(--font-sans);
   color: var(--black-500);
-  padding: 0 0 16px;
-  margin: 0 0 16px;
-  /* border-bottom: var(--border-width) solid var(--border-color); */
+  padding: 0;
+  margin: 0 0 20px;
   outline: none;
 }
 
 .note-editor-title::placeholder {
-  color: var(--black-300);
+  color: #3a3a3a;
 }
 
 .note-editor-body {
@@ -211,6 +255,53 @@
   margin: 0.35em 0;
   padding-left: 1.4em;
   list-style-type: disc;
+}
+
+.note-editor-body ul.note-checklist {
+  list-style: none;
+  padding-left: 0;
+}
+
+.note-editor-body ul.note-checklist li {
+  position: relative;
+  padding-left: 1.6em;
+  cursor: text;
+}
+
+.note-editor-body ul.note-checklist li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.35em;
+  width: 14px;
+  height: 14px;
+  border: var(--border-width) solid var(--black-300);
+  border-radius: 3px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.note-editor-body ul.note-checklist li.note-checklist-item-checked {
+  text-decoration: line-through;
+  color: var(--black-300);
+}
+
+.note-editor-body ul.note-checklist li.note-checklist-item-checked::before {
+  background: var(--accent-green);
+  border-color: var(--accent-green);
+}
+
+.note-editor-body ul.note-checklist li.note-checklist-item-checked::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0.62em;
+  width: 8px;
+  height: 4px;
+  border-left: 2px solid var(--black);
+  border-bottom: 2px solid var(--black);
+  transform: rotate(-45deg);
+  pointer-events: none;
 }
 
 .note-editor-body li {

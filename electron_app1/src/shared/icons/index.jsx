@@ -56,6 +56,36 @@ export function ChevronRightIcon({ width = 16, height = 16, weight = 2 }) {
   )
 }
 
+export function HighlightIcon({ width = 18, height = 18, weight = 1.75 }) {
+  return (
+    <Icon viewBox="0 0 18 18" width={width} height={height} weight={weight}>
+      <path d="M3 15 9 3l6 12H3Z" strokeLinejoin="round" />
+      <path d="M6 11h6" strokeLinecap="round" />
+    </Icon>
+  )
+}
+
+export function BulletListIcon({ width = 18, height = 18, weight = 1.75 }) {
+  return (
+    <Icon viewBox="0 0 18 18" width={width} height={height} weight={weight}>
+      <circle cx="3" cy="5" r="1" fill="currentColor" stroke="none" />
+      <circle cx="3" cy="9" r="1" fill="currentColor" stroke="none" />
+      <circle cx="3" cy="13" r="1" fill="currentColor" stroke="none" />
+      <path d="M7 5h8M7 9h8M7 13h8" strokeLinecap="round" />
+    </Icon>
+  )
+}
+
+export function ChecklistIcon({ width = 18, height = 18, weight = 1.75 }) {
+  return (
+    <Icon viewBox="0 0 18 18" width={width} height={height} weight={weight}>
+      <path d="M3 5.5 4.5 7 7 4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M3 9.5 4.5 11 7 8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 5h6M9 9h6M9 13h6" strokeLinecap="round" />
+    </Icon>
+  )
+}
+
 export function PanelIcon({ width = 18, height = 18, weight = 2 }) {
   return (
     <Icon viewBox="0 0 18 18" width={width} height={height} weight={weight}>

@@ -42,12 +42,39 @@
   margin-bottom: 4px;
 }
 
+.sidebar-header-month {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
 .sidebar-title {
   font: var(--title-sm);
   margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: var(--black-500);
+  white-space: nowrap;
+}
+
+.sidebar-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--black-300);
+  cursor: pointer;
+}
+
+.sidebar-nav-btn:hover {
+  color: var(--black-500);
+  background: var(--black-100);
 }
 
 .sidebar-panel-toggle {
@@ -66,10 +93,6 @@
 .sidebar-panel-toggle:hover {
   color: var(--black-500);
   background: var(--black-100);
-}
-
-.sidebar-nav-btn {
-  display: none;
 }
 
 .sidebar-grid {

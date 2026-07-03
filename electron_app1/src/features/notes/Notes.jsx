@@ -1,6 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { PanelIcon } from '../../shared/icons'
-import { handleListKeyDown } from '../../utils/noteListEditor'
+import DigitalClock from '../../shared/DigitalClock'
+import {
+  BulletListIcon,
+  ChecklistIcon,
+  HighlightIcon,
+  PanelIcon,
+} from '../../shared/icons'
+import {
+  getListItemAtSelection,
+  handleListKeyDown,
+  tryToggleChecklistItem,
+} from '../../utils/noteListEditor'
 import '../../shared/sidebar.css'
 import './notes.css'
 
@@ -100,6 +110,141 @@ function NotesSidebar({ notes, activeNoteId, onSelectNote, onCreateNote }) {
   )
 }
 
+const HIGHLIGHT_COLOR = 'rgba(112, 243, 80, 0.35)'
+
+function applyEditorCommand(editor, command, value, onContentChange) {
+  editor.focus()
+  document.execCommand(command, false, value ?? null)
+  onContentChange(editor.innerHTML)
+}
+
+function toggleList(editor, onContentChange, checklist = false) {
+  editor.focus()
+  document.execCommand('insertUnorderedList')
+  const listItem = getListItemAtSelection(editor)
+  const list = listItem?.closest('ul')
+  if (list) {
+    list.classList.toggle('note-checklist', checklist)
+  }
+  onContentChange(editor.innerHTML)
+}
+
+function NoteFormatToolbar({ editorRef, onContentChange }) {
+  function run(action) {
+    const editor = editorRef.current
+    if (!editor) {
+      return
+    }
+    action(editor)
+  }
+
+  return (
+    <div className="notes-format-toolbar" role="toolbar" aria-label="Note formatting">
+      <div className="notes-format-group">
+        <button
+          type="button"
+          className="notes-format-btn notes-format-btn-text"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() =>
+            run((editor) =>
+              applyEditorCommand(editor, 'formatBlock', 'h1', onContentChange),
+            )
+          }
+        >
+          Title
+        </button>
+        <button
+          type="button"
+          className="notes-format-btn notes-format-btn-text"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() =>
+            run((editor) =>
+              applyEditorCommand(editor, 'formatBlock', 'h2', onContentChange),
+            )
+          }
+        >
+          Subtitle
+        </button>
+        <button
+          type="button"
+          className="notes-format-btn notes-format-btn-text"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() =>
+            run((editor) =>
+              applyEditorCommand(editor, 'formatBlock', 'div', onContentChange),
+            )
+          }
+        >
+          Normal
+        </button>
+      </div>
+
+      <span className="notes-format-divider" aria-hidden="true" />
+
+      <div className="notes-format-group">
+        <button
+          type="button"
+          className="notes-format-btn notes-format-btn-icon"
+          aria-label="Bold"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() =>
+            run((editor) =>
+              applyEditorCommand(editor, 'bold', null, onContentChange),
+            )
+          }
+        >
+          B
+        </button>
+        <button
+          type="button"
+          className="notes-format-btn notes-format-btn-icon"
+          aria-label="Highlight"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() =>
+            run((editor) =>
+              applyEditorCommand(
+                editor,
+                'hiliteColor',
+                HIGHLIGHT_COLOR,
+                onContentChange,
+              ),
+            )
+          }
+        >
+          <HighlightIcon />
+        </button>
+      </div>
+
+      <span className="notes-format-divider" aria-hidden="true" />
+
+      <div className="notes-format-group">
+        <button
+          type="button"
+          className="notes-format-btn notes-format-btn-icon"
+          aria-label="Checklist"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() =>
+            run((editor) => toggleList(editor, onContentChange, true))
+          }
+        >
+          <ChecklistIcon />
+        </button>
+        <button
+          type="button"
+          className="notes-format-btn notes-format-btn-icon"
+          aria-label="Bulleted list"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() =>
+            run((editor) => toggleList(editor, onContentChange, false))
+          }
+        >
+          <BulletListIcon />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function NoteEditor({ note, onTitleChange, onContentChange }) {
   const editorRef = useRef(null)
 
@@ -152,29 +297,48 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
     onContentChange(editorRef.current?.innerHTML ?? '')
   }
 
+  function handleMouseDown(event) {
+    const editor = editorRef.current
+    if (!editor) {
+      return
+    }
+
+    if (tryToggleChecklistItem(editor, event)) {
+      onContentChange(editor.innerHTML)
+    }
+  }
+
   return (
-    <div className="note-editor">
-      <input
-        type="text"
-        className="note-editor-title"
-        placeholder="Note title"
-        value={note.title}
-        onChange={(event) => onTitleChange(event.target.value)}
+    <div className="notes-editor-shell">
+      <NoteFormatToolbar
+        editorRef={editorRef}
+        onContentChange={onContentChange}
       />
 
-      <div
-        ref={editorRef}
-        className="note-editor-body"
-        contentEditable
-        role="textbox"
-        aria-multiline="true"
-        aria-label="Note content"
-        data-placeholder="Start writing,,,"
-        onInput={handleInput}
-        placeholder="Start writing..."
-        suppressContentEditableWarning
-        spellCheck="false"
-      />
+      <div className="note-editor">
+        <input
+          type="text"
+          className="note-editor-title"
+          placeholder="Note title"
+          value={note.title}
+          onChange={(event) => onTitleChange(event.target.value)}
+        />
+
+        <div
+          ref={editorRef}
+          className="note-editor-body"
+          contentEditable
+          role="textbox"
+          aria-multiline="true"
+          aria-label="Note content"
+          data-placeholder="Start writing,,,"
+          onInput={handleInput}
+          onMouseDown={handleMouseDown}
+          placeholder="Start writing..."
+          suppressContentEditableWarning
+          spellCheck="false"
+        />
+      </div>
     </div>
   )
 }
@@ -256,16 +420,19 @@ export default function Notes({ defaultSidebarOpen = true }) {
 
       <div className="notes-main">
         <header className="notes-toolbar">
-          <button
-            type="button"
-            className={`notes-sidebar-toggle${sidebarOpen ? ' notes-sidebar-toggle-active' : ''}`}
-            aria-label={sidebarOpen ? 'Hide notes sidebar' : 'Show notes sidebar'}
-            aria-pressed={sidebarOpen}
-            onClick={() => setSidebarOpen((open) => !open)}
-          >
-            <PanelIcon />
-          </button>
-         </header>
+          <div className="notes-toolbar-start">
+            <button
+              type="button"
+              className={`notes-sidebar-toggle${sidebarOpen ? ' notes-sidebar-toggle-active' : ''}`}
+              aria-label={sidebarOpen ? 'Hide notes sidebar' : 'Show notes sidebar'}
+              aria-pressed={sidebarOpen}
+              onClick={() => setSidebarOpen((open) => !open)}
+            >
+              <PanelIcon />
+            </button>
+            <DigitalClock />
+          </div>
+        </header>
 
         <NoteEditor
           key={activeNote.id}

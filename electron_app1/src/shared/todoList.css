@@ -212,7 +212,7 @@
   background: var(--black-100);
 }
 
-.sidebar-todos-empty {
+.sidebar-todos-input {
   width: 100%;
   margin: 0;
   padding: 8px 4px;
@@ -225,15 +225,15 @@
   flex-shrink: 0;
 }
 
-.sidebar-todos-empty-solo {
+.sidebar-todos-input-solo {
   flex: 1;
   min-height: 0;
 }
 
-.sidebar-todos-empty::placeholder {
+.sidebar-todos-input::placeholder {
   color: var(--black-300);
 }
 
-.sidebar-todos-empty:focus {
+.sidebar-todos-input:focus {
   outline: none;
 }

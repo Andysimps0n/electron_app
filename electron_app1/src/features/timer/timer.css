@@ -28,6 +28,12 @@
   flex-shrink: 0;
 }
 
+.timer-toolbar-start {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .timer-sidebar-toggle {
   display: flex;
   align-items: center;

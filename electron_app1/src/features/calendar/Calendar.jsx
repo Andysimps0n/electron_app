@@ -42,6 +42,18 @@ export default function Calendar({
     }
   }
 
+  function handlePreviousMonth() {
+    setViewedMonth(
+      (current) => new Date(current.getFullYear(), current.getMonth() - 1, 1),
+    )
+  }
+
+  function handleNextMonth() {
+    setViewedMonth(
+      (current) => new Date(current.getFullYear(), current.getMonth() + 1, 1),
+    )
+  }
+
   return (
     <div className="calendar">
       <aside
@@ -55,6 +67,8 @@ export default function Calendar({
           eventDates={getMockEventDates(viewedMonth)}
           sidebarOpen={sidebarOpen}
           onDateSelect={handleDateSelect}
+          onPreviousMonth={handlePreviousMonth}
+          onNextMonth={handleNextMonth}
           onToggleSidebar={() => setSidebarOpen((open) => !open)}
         />
       </aside>

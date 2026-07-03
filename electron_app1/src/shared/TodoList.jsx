@@ -90,8 +90,8 @@ export default function TodoList({
       )}
 
       <textarea
-        className={`sidebar-todos-empty${
-          todos.length === 0 ? ' sidebar-todos-empty-solo' : ''
+        className={`sidebar-todos-input${
+          todos.length === 0 ? ' sidebar-todos-input-solo' : ''
         }`}
         placeholder={placeholder}
         value={todoDraft}

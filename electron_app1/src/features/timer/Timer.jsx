@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import DigitalClock from '../../shared/DigitalClock'
 import { PanelIcon } from '../../shared/icons'
 import TimerSidebar from './TimerSidebar'
+import { playBreakRing } from './breakRing'
 import '../../shared/sidebar.css'
 import './timer.css'
 
@@ -241,6 +243,7 @@ export default function Timer({ defaultSidebarOpen = true }) {
 
   const handlePhaseComplete = useCallback(() => {
     if (phase === 'focus') {
+      playBreakRing().catch(() => {})
       setCompletedSessions((count) => count + 1)
       resetFocusBlock('break', activePreset)
       setStatusMessage('Focus block complete — enjoy your break.')
@@ -350,40 +353,18 @@ export default function Timer({ defaultSidebarOpen = true }) {
 
       <div className="timer-main">
         <header className="timer-toolbar">
-          <button
-            type="button"
-            className={`timer-sidebar-toggle${sidebarOpen ? ' timer-sidebar-toggle-active' : ''}`}
-            aria-label={sidebarOpen ? 'Hide timer sidebar' : 'Show timer sidebar'}
-            aria-pressed={sidebarOpen}
-            onClick={() => setSidebarOpen((open) => !open)}
-          >
-            <PanelIcon />
-          </button>
-
-          {activeMode === 'clock' && (
-            <div className="timer-display-toggle" role="group" aria-label="Clock display mode">
-              <button
-                type="button"
-                className={`timer-display-toggle-btn${
-                  clockDisplayMode === 'digital' ? ' timer-display-toggle-btn-active' : ''
-                }`}
-                aria-pressed={clockDisplayMode === 'digital'}
-                onClick={() => setClockDisplayMode('digital')}
-              >
-                Digital
-              </button>
-              <button
-                type="button"
-                className={`timer-display-toggle-btn${
-                  clockDisplayMode === 'analog' ? ' timer-display-toggle-btn-active' : ''
-                }`}
-                aria-pressed={clockDisplayMode === 'analog'}
-                onClick={() => setClockDisplayMode('analog')}
-              >
-                Analog
-              </button>
-            </div>
-          )}
+          <div className="timer-toolbar-start">
+            <button
+              type="button"
+              className={`timer-sidebar-toggle${sidebarOpen ? ' timer-sidebar-toggle-active' : ''}`}
+              aria-label={sidebarOpen ? 'Hide timer sidebar' : 'Show timer sidebar'}
+              aria-pressed={sidebarOpen}
+              onClick={() => setSidebarOpen((open) => !open)}
+            >
+              <PanelIcon />
+            </button>
+            <DigitalClock />
+          </div>
         </header>
 
         {activeMode === 'focus' ? (
