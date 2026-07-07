@@ -221,6 +221,15 @@ export function VolumeHighIcon({ width = 16, height = 16, weight = 2 }) {
   )
 }
 
+export function VolumeMuteIcon({ width = 16, height = 16, weight = 2 }) {
+  return (
+    <Icon viewBox="0 0 20 20" width={width} height={height} weight={weight}>
+      <path d="M4 8h3l4-3v10l-4-3H4V8Z" strokeLinejoin="round" />
+      <path d="M14 7l4 4M18 7l-4 4" strokeLinecap="round" />
+    </Icon>
+  )
+}
+
 // Play / Pause / Stop are solid glyphs. They deliberately skip the shared
 // `.icon` class because that class forces `fill: none` (great for line art,
 // wrong for filled shapes), so we fill them with currentColor directly.

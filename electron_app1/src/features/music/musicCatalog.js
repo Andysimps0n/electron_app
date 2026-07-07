@@ -27,7 +27,7 @@ export const WHITE_NOISE_PLAYBACK_RATE = 0.72
 export const TRACK_PLAYBACK_GAIN = {
   forest: 10,
   'sea-waves': 2,
-  rainfall: 3,
+  rainfall: 5,
   'fire-chipping': 4,
   'white-noise': 0.15,
   'brown-noise': 0.4,

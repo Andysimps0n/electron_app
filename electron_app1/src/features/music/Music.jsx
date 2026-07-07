@@ -10,12 +10,12 @@ import DigitalClock from '../../shared/DigitalClock'
 import { TRACKS } from './musicCatalog'
 import {
   getMix,
-  saveMixPreset,
   setTrackVolume,
   stopAllTracks,
   subscribe,
   toggleTrackPlay,
 } from './musicStore'
+import { saveMixPresetEverywhere } from '../sync/musicPresetSync'
 import './music.css'
 
 function TrackCard({ track, state, onTogglePlay, onVolumeChange }) {
@@ -64,17 +64,23 @@ function TrackCard({ track, state, onTogglePlay, onVolumeChange }) {
 
 export default function Music() {
   const mix = useSyncExternalStore(subscribe, getMix, getMix)
-  const [savedRecently, setSavedRecently] = useState(false)
+  const [savedStatus, setSavedStatus] = useState(null)
   const savedTimeoutRef = useRef(null)
 
   const activeTracks = TRACKS.filter((track) => mix[track.id].isPlaying)
 
-  function handleSavePreset() {
-    saveMixPreset()
-    setSavedRecently(true)
+  async function handleSavePreset() {
+    let status = 'local'
+    try {
+      status = await saveMixPresetEverywhere()
+    } catch {
+      // localStorage save already happened; a cloud failure still means
+      // the preset is safe on this device.
+    }
+    setSavedStatus(status)
     window.clearTimeout(savedTimeoutRef.current)
     savedTimeoutRef.current = window.setTimeout(() => {
-      setSavedRecently(false)
+      setSavedStatus(null)
     }, 1600)
   }
 
@@ -137,7 +143,11 @@ export default function Music() {
             className="music-save-btn"
             onClick={handleSavePreset}
           >
-            {savedRecently ? 'Saved' : 'Save Preset'}
+            {savedStatus === null
+              ? 'Save Preset'
+              : savedStatus === 'synced'
+                ? 'Saved & synced'
+                : 'Saved locally'}
           </button>
         </div>
       </footer>

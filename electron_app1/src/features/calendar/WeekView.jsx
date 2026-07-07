@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { PanelIcon } from '../../shared/icons'
+import MusicMuteButton from '../../shared/MusicMuteButton'
 import {
   addDays,
   DAY_LABELS,
@@ -140,7 +141,7 @@ export default function WeekView({
   }, [editorSelection, eventTitle, eventDetails, editingEventId])
 
   function getScrollDelta(rawDelta) {
-    return reverseScrollRef.current ? -rawDelta : rawDelta
+    return reverseScrollRef.current ? rawDelta : -rawDelta
   }
 
   function lockVerticalScroll() {
@@ -1097,6 +1098,9 @@ export default function WeekView({
           </time>
         </div>
 
+        <div className="week-view-header-actions">
+          <MusicMuteButton />
+        </div>
       </header>
 
       <div

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import DigitalClock from '../../shared/DigitalClock'
+import MusicMuteButton from '../../shared/MusicMuteButton'
 import { PanelIcon } from '../../shared/icons'
 import TimerSidebar from './TimerSidebar'
 import { playBreakRing } from './breakRing'
@@ -365,6 +366,7 @@ export default function Timer({ defaultSidebarOpen = true }) {
             </button>
             <DigitalClock />
           </div>
+          <MusicMuteButton />
         </header>
 
         {activeMode === 'focus' ? (

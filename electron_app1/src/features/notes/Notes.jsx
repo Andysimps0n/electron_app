@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import DigitalClock from '../../shared/DigitalClock'
+import MusicMuteButton from '../../shared/MusicMuteButton'
 import {
   BulletListIcon,
   ChecklistIcon,
@@ -432,6 +433,7 @@ export default function Notes({ defaultSidebarOpen = true }) {
             </button>
             <DigitalClock />
           </div>
+          <MusicMuteButton />
         </header>
 
         <NoteEditor

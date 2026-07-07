@@ -22,6 +22,7 @@ let noiseEngine = null
 const lofiPickOnPlay = {}
 /** @type {Set<() => void>} */
 const listeners = new Set()
+let isMuted = false
 
 function getEngines() {
   if (!fileAudio) {
@@ -50,6 +51,24 @@ export function getMix() {
   return mix
 }
 
+export function getIsMuted() {
+  return isMuted
+}
+
+function getEffectiveOutputGain(trackId, volume) {
+  if (isMuted) {
+    return 0
+  }
+
+  return getOutputGain(trackId, volume)
+}
+
+export function toggleMute() {
+  isMuted = !isMuted
+  emitChange()
+  syncMixToAudio()
+}
+
 function setMix(nextMix) {
   mix = nextMix
   emitChange()
@@ -67,7 +86,7 @@ function startLofiTrack(trackId, { forceNew = false } = {}) {
 
   const { fileAudio: engine } = getEngines()
   const state = mix[trackId]
-  const outputGain = getOutputGain(trackId, state.volume)
+  const outputGain = getEffectiveOutputGain(trackId, state.volume)
   const existing = engine.getTrack(trackId)
 
   if (!forceNew && existing && !existing.audio.ended) {
@@ -129,7 +148,7 @@ function syncFileTrack(track) {
   engine
     .play(track.id, track.src, {
       loop: true,
-      outputGain: getOutputGain(track.id, state.volume),
+      outputGain: getEffectiveOutputGain(track.id, state.volume),
     })
     .catch(() => {})
 }
@@ -147,7 +166,7 @@ export function syncMixToAudio() {
             ? { playbackRate: WHITE_NOISE_PLAYBACK_RATE }
             : {}
         noise
-          .play(track.id, track.kind, getOutputGain(track.id, state.volume), options)
+          .play(track.id, track.kind, getEffectiveOutputGain(track.id, state.volume), options)
           .catch(() => {})
       } else {
         noise.pause(track.id)
@@ -196,10 +215,36 @@ export function stopAllTracks() {
   setMix(next)
 }
 
-export function saveMixPreset() {
+/** Snapshot of the current mix in the shape we persist: volumes only. */
+export function getMixPreset() {
   const preset = {}
   for (const track of TRACKS) {
     preset[track.id] = { volume: mix[track.id].volume }
   }
-  localStorage.setItem(MIX_STORAGE_KEY, JSON.stringify(preset))
+  return preset
+}
+
+export function saveMixPreset() {
+  localStorage.setItem(MIX_STORAGE_KEY, JSON.stringify(getMixPreset()))
+}
+
+/**
+ * Overwrite volumes from a synced preset (e.g. fetched from the cloud after
+ * login). Playback state stays untouched, and localStorage is updated so the
+ * device keeps the synced volumes when offline.
+ */
+export function applyPresetVolumes(preset) {
+  const next = {}
+  for (const track of TRACKS) {
+    const saved = preset?.[track.id]
+    next[track.id] = {
+      ...mix[track.id],
+      volume:
+        saved === undefined
+          ? mix[track.id].volume
+          : clampVolume(saved.volume, track.id),
+    }
+  }
+  setMix(next)
+  saveMixPreset()
 }
