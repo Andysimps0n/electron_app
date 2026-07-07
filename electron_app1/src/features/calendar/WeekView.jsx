@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { PanelIcon } from '../../shared/icons'
+import AuthButton from '../../shared/AuthButton'
 import MusicMuteButton from '../../shared/MusicMuteButton'
 import {
   addDays,
@@ -61,6 +62,10 @@ export default function WeekView({
   const [weekScrollOffset, setWeekScrollOffset] = useState(0)
   const [verticalScrollLocked, setVerticalScrollLocked] = useState(false)
   weekScrollOffsetRef.current = weekScrollOffset
+
+  useEffect(() => {
+    console.log('events', events)
+  }, [events])
 
   const scrollStyle = {
     '--week-scroll-offset': `${weekScrollOffset}px`,
@@ -1100,6 +1105,7 @@ export default function WeekView({
 
         <div className="week-view-header-actions">
           <MusicMuteButton />
+          <AuthButton />
         </div>
       </header>
 

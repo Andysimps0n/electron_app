@@ -1,0 +1,159 @@
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 36px;
+  padding: 0 14px;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--black-500);
+  cursor: pointer;
+  flex-shrink: 0;
+  font: var(--body-sm-bold);
+}
+
+.auth-button:hover:not(:disabled) {
+  background: var(--black-050);
+}
+
+.auth-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.auth-button-avatar {
+  min-width: 36px;
+  width: 36px;
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.auth-button-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.auth-button-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--accent-green-muted);
+  color: var(--accent-green);
+  font: var(--body-sm-bold);
+}
+
+.login-card-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-card-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.54);
+  cursor: pointer;
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  width: min(360px, 100%);
+  padding: 32px;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-lg);
+  background: var(--bg-main);
+  color: var(--black-500);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+  text-align: center;
+}
+
+.login-card-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--black-300);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.login-card-close:hover {
+  background: var(--black-050);
+  color: var(--black-500);
+}
+
+.login-card-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 18px;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 50%;
+  color: var(--accent-green);
+  font: var(--body-lg-bold);
+}
+
+.login-card-title {
+  margin: 0;
+  font: var(--title-base);
+}
+
+.login-card-copy {
+  margin: 12px 0 24px;
+  color: var(--black-300);
+  font: var(--body-sm);
+}
+
+.login-card-google-btn {
+  width: 100%;
+  min-height: 42px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--accent-green);
+  color: var(--event-text);
+  cursor: pointer;
+  font: var(--body-sm-bold);
+}
+
+.login-card-google-btn:hover:not(:disabled) {
+  background: var(--accent-green-dim);
+}
+
+.login-card-google-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.login-card-error {
+  margin: 16px 0 0;
+  color: var(--black-500);
+  font: var(--body-sm);
+}
