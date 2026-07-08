@@ -13,7 +13,7 @@
 }
 
 .music-mute-btn:hover:not(.music-mute-btn-active) {
-  background: var(--black-050);
+  background: var(--black-100);
 }
 
 .music-mute-btn-active {

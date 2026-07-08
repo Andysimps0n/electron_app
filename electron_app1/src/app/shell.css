@@ -128,7 +128,7 @@
   border: var(--border-width) solid var(--border-color);
   border-radius: var(--radius-md);
   background: var(--bg-main);
-  color: var(--black-400);
+  color: var(--black-500);
   font: var(--body-sm);
   cursor: pointer;
 }

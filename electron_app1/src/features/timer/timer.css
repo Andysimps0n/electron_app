@@ -48,7 +48,7 @@
 }
 
 .timer-sidebar-toggle:hover:not(.timer-sidebar-toggle-active) {
-  background: var(--black-050);
+  background: var(--black-100);
 }
 
 .timer-display-toggle {
@@ -71,7 +71,7 @@
 
 .timer-display-toggle-btn:hover:not(.timer-display-toggle-btn-active) {
   color: var(--black-500);
-  background: var(--black-050);
+  background: var(--black-100);
 }
 
 .timer-display-toggle-btn-active {
@@ -136,7 +136,7 @@
 }
 
 .timer-sidebar-item:hover:not(.timer-sidebar-item-active) {
-  background: var(--black-050);
+  background: var(--black-100);
 }
 
 .timer-sidebar-item-active,

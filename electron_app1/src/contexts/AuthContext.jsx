@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { isElectron } from '../lib/isElectron'
 import { signInWithGoogleBrowser } from '../features/auth/oauthBrowser'
 import { signInWithGoogleElectron } from '../features/auth/oauthElectron'
+import { syncCalendarEventsOnLogin } from '../features/sync/calendarEventSync'
 import { syncPresetOnLogin } from '../features/sync/musicPresetSync'
 
 const AuthContext = createContext(null)
@@ -33,6 +34,9 @@ export function AuthProvider({ children }) {
         setTimeout(() => {
           syncPresetOnLogin(userId).catch((error) => {
             console.error('Failed to sync music preset:', error)
+          })
+          syncCalendarEventsOnLogin(userId).catch((error) => {
+            console.error('Failed to sync calendar events:', error)
           })
         }, 0)
       }

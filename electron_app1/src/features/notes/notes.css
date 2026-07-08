@@ -57,7 +57,7 @@
 }
 
 .notes-sidebar-toggle:hover:not(.notes-sidebar-toggle-active) {
-  background: var(--black-050);
+  background: var(--black-100);
 }
 
 .notes-toolbar-start {
@@ -146,7 +146,7 @@
 }
 
 .notes-sidebar-new-btn:hover {
-  background: var(--black-050);
+  background: var(--black-100);
 }
 
 .notes-sidebar-list {
@@ -174,7 +174,7 @@
 }
 
 .notes-sidebar-item:hover:not(.notes-sidebar-item-active) {
-  /* background: var(--black-050); */
+  /* background: var(--black-100); */
 }
 
 .notes-sidebar-item-active,

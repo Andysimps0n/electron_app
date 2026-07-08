@@ -21,7 +21,7 @@
 }
 
 .auth-button:hover:not(:disabled) {
-  background: var(--black-050);
+  background: var(--black-100);
 }
 
 .auth-button:disabled {
@@ -104,7 +104,7 @@
 }
 
 .login-card-close:hover {
-  background: var(--black-050);
+  background: var(--black-100);
   color: var(--black-500);
 }
 
@@ -144,7 +144,7 @@
 }
 
 .login-card-google-btn:hover:not(:disabled) {
-  background: var(--accent-green-dim);
+  background: var(--accent-green);
 }
 
 .login-card-google-btn:disabled {

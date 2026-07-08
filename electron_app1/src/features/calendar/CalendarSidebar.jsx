@@ -44,7 +44,7 @@ export default function CalendarSidebar({
               <ChevronRightIcon />
             </button>
           </div>
-          <button
+          {/* <button
             type="button"
             className="sidebar-panel-toggle"
             aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
@@ -52,7 +52,7 @@ export default function CalendarSidebar({
             onClick={onToggleSidebar}
           >
             <PanelIcon />
-          </button>
+          </button> */}
         </div>
 
         <div className="sidebar-grid">

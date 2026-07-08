@@ -42,7 +42,7 @@ export default function TimerSidebar({
                 onClick={onSelectClock}
               >
                 <span className="timer-sidebar-item-label">Desk Clock</span>
-                <span className="timer-sidebar-item-meta">digital or analog</span>
+                <span className="timer-sidebar-item-meta">Digital clock</span>
               </button>
           </ul>
         </section>

@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { PanelIcon } from '../../shared/icons'
 import AuthButton from '../../shared/AuthButton'
 import MusicMuteButton from '../../shared/MusicMuteButton'
+import { useCalendarEvents } from '../../hooks/useCalendarEvents'
 import {
   addDays,
   DAY_LABELS,
@@ -57,15 +58,11 @@ export default function WeekView({
   const [eventTitle, setEventTitle] = useState('')
   const [eventDetails, setEventDetails] = useState('')
   const [editorFlipY, setEditorFlipY] = useState(false)
-  const [events, setEvents] = useState([])
+  const { events, createEvent, updateEvent, deleteEvent } = useCalendarEvents()
   const [now, setNow] = useState(() => new Date())
   const [weekScrollOffset, setWeekScrollOffset] = useState(0)
   const [verticalScrollLocked, setVerticalScrollLocked] = useState(false)
   weekScrollOffsetRef.current = weekScrollOffset
-
-  useEffect(() => {
-    console.log('events', events)
-  }, [events])
 
   const scrollStyle = {
     '--week-scroll-offset': `${weekScrollOffset}px`,
@@ -196,9 +193,7 @@ export default function WeekView({
       return
     }
 
-    setEvents((currentEvents) =>
-      currentEvents.filter((calendarEvent) => calendarEvent.id !== editingEventId),
-    )
+    deleteEvent(editingEventId)
     dismissEditor()
   }
 
@@ -575,13 +570,7 @@ export default function WeekView({
         return
       }
 
-      setEvents((currentEvents) =>
-        currentEvents.map((calendarEvent) =>
-          calendarEvent.id === interaction.eventId
-            ? { ...calendarEvent, ...nextSelection }
-            : calendarEvent,
-        ),
-      )
+      updateEvent(interaction.eventId, nextSelection)
       return
     }
 
@@ -620,17 +609,10 @@ export default function WeekView({
       )
 
       if (interaction.mode === 'drag-event') {
-        setEvents((currentEvents) =>
-          currentEvents.map((calendarEvent) =>
-            calendarEvent.id === interaction.calendarEvent.id
-              ? {
-                  ...calendarEvent,
-                  ...nextBlock,
-                  dateKey: getDateKey(weekDates[nextBlock.dayIndex]),
-                }
-              : calendarEvent,
-          ),
-        )
+        updateEvent(interaction.calendarEvent.id, {
+          ...nextBlock,
+          dateKey: getDateKey(weekDates[nextBlock.dayIndex]),
+        })
 
         if (editingEventId === interaction.calendarEvent.id) {
           setEditorSelection(nextBlock)
@@ -862,31 +844,22 @@ export default function WeekView({
     const details = eventDetails.trim()
 
     if (editingEventId) {
-      setEvents((currentEvents) =>
-        currentEvents.map((calendarEvent) =>
-          calendarEvent.id === editingEventId
-            ? {
-                ...calendarEvent,
-                title,
-                details,
-                dayIndex: editorSelection.dayIndex,
-                startMinute: editorSelection.startMinute,
-                endMinute: editorSelection.endMinute,
-              }
-            : calendarEvent,
-        ),
-      )
+      updateEvent(editingEventId, {
+        title,
+        details,
+        dayIndex: editorSelection.dayIndex,
+        startMinute: editorSelection.startMinute,
+        endMinute: editorSelection.endMinute,
+        dateKey: getDateKey(weekDates[editorSelection.dayIndex]),
+      })
     } else {
-      setEvents((currentEvents) => [
-        ...currentEvents,
-        {
-          id: crypto.randomUUID(),
-          dateKey: getDateKey(weekDates[editorSelection.dayIndex]),
-          title,
-          details,
-          ...editorSelection,
-        },
-      ])
+      createEvent({
+        id: crypto.randomUUID(),
+        dateKey: getDateKey(weekDates[editorSelection.dayIndex]),
+        title,
+        details,
+        ...editorSelection,
+      })
     }
 
     dismissEditor()
@@ -1051,6 +1024,16 @@ export default function WeekView({
   return (
     <div className="week-view" ref={weekViewRef}>
       <header className="week-view-header">
+          <button
+            type="button"
+            className="sidebar-panel-toggle"
+            aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+            aria-pressed={sidebarOpen}
+            onClick={onToggleSidebar}
+          >
+            <PanelIcon />
+          </button> 
+        
         <div className="week-view-week-picker">
           {!sidebarOpen && (
             <button
@@ -1062,27 +1045,6 @@ export default function WeekView({
               <PanelIcon />
             </button>
           )}
-          {/* <div className="week-view-week-picker-inner">
-          <button
-            type="button"
-            className="week-view-week-picker-btn"
-            aria-label="Previous week"
-            onClick={() => navigateWeek(-7)}
-          >
-            <ChevronLeftIcon />
-          </button>
-          <span className="week-view-week-label">
-            Week {getWeekNumber(selectedDate)}
-          </span>
-          <button
-            type="button"
-            className="week-view-week-picker-btn"
-            aria-label="Next week"
-            onClick={() => navigateWeek(7)}
-          >
-            <ChevronRightIcon />
-          </button>
-          </div> */}
         </div>
 
         <div className="week-view-header-center">

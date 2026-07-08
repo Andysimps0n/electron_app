@@ -1,48 +1,24 @@
-/* ==========================================================================
-   Design tokens
-   ========================================================================== */
-
 :root {
-  /* ----------------------------------------------------------------------
-     Palette: the ONLY four colors used in the app.
-     Everything below is built from these.
-     ---------------------------------------------------------------------- */
   --black: hsl(0, 0%, 0%);            /* true black: main background + darkest surfaces */
   --deep: #002214;             /* medium darkness: elevated surfaces, borders, hovers */
-  /* --deep: #003920;             medium darkness: elevated surfaces, borders, hovers */
   --accent: rgb(112, 243, 80); /* accent: buttons + important, readable highlights */
   --cream: #fff7e4;            /* light text */
-
-  /* Cream at lower opacity for muted/secondary text. Still only the cream
-     color, just dimmed, so we keep text hierarchy without a 5th color. */
   --cream-muted: rgba(255, 247, 228, 0.55);
 
-  /* ----------------------------------------------------------------------
-     Semantic tokens mapped onto the palette.
-     ---------------------------------------------------------------------- */
   --bg-main: var(--black);
   --bg-elevated: var(--deep);
-  --bg-input: var(--deep);
   --bg-timeblock :rgb(89, 199, 62);
-  --black-500: var(--cream);       /* primary text */
-  --black-400: var(--cream);       /* strong text */
+  --black-500: var(--cream);       /* primary / strong text */
   --black-300: var(--cream-muted); /* muted / secondary text */
-  --black-200: var(--deep);        /* borders / outlines */
-  --black-100: var(--deep);        /* hover surfaces */
-  --black-050: var(--deep);        /* subtle hover surfaces */
+  --black-100: var(--deep);        /* hover surfaces / borders / outlines */
 
   --accent-green: var(--accent);
-  --accent-green-dim: var(--accent);
   --accent-green-muted: rgba(112, 243, 80, 0.12);
+  --accent-green-light: rgba(112, 243, 80, 0.4);
   --event-text: var(--black);      /* text on top of accent-colored surfaces */
 
   --border-width: 1px;
   --border-color: #1e1e1e;
-  --grid-line: #1e1e1e;
-  --surface-dark: var(--black);
-  --surface-dark-2: var(--deep);
-  --surface-dark-3: var(--deep);
-  --text-inverse: var(--black);
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
