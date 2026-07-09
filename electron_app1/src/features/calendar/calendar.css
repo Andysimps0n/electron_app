@@ -90,11 +90,6 @@
   cursor: pointer;
 }
 
-.sidebar-panel-toggle:hover {
-  color: var(--black-500);
-  background: var(--black-100);
-}
-
 .sidebar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -174,8 +169,8 @@
 }
 
 .week-view-header {
+  position: relative;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 16px;
   min-width: 0;
@@ -242,13 +237,16 @@
 }
 
 .week-view-header-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 16px;
-  justify-self: center;
   min-width: 0;
   flex-wrap: wrap;
   justify-content: center;
+  pointer-events: none;
 }
 
 .week-view-nav {
@@ -318,7 +316,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  justify-self: end;
+  margin-left: auto;
 }
 
 .week-view-settings-btn {
@@ -543,8 +541,8 @@
   top: calc(var(--selection-top) + var(--block-inset));
   height: calc(var(--selection-height) - 2 * var(--block-inset));
   padding: 6px;
-  background: var(--accent-green-muted);
-  border: 0.2px solid var(--accent-green);
+  background: var(--event-bg, var(--accent-green-muted));
+  border: 0.2px solid var(--event-border, var(--accent-green));
   /* border-radius: 4px; */
   gap: 4px;
 
@@ -577,13 +575,9 @@
   border-color: var(--accent-green);
 }
 
-.week-view-selection-editing {
-  background: var(--accent-green-light);
-}
-
-
+.week-view-selection-editing,
 .week-view-event-editing {
-  background: var(--accent-green-light);
+  background: var(--event-bg-editing, var(--accent-green-light));
   /* box-shadow: 0 0 0 2px var(--bg-main), 0 0 0 4px var(--black-500); */
 }
 
@@ -751,9 +745,37 @@
 
 .event-editor-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   margin-top: 12px;
+}
+
+.event-editor-color-swatches {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.event-editor-color-swatch {
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.event-editor-color-swatch-selected {
+  box-shadow:
+    0 0 0 2px var(--bg-main),
+    0 0 0 3px var(--black-500);
+}
+
+.event-editor-action-buttons {
+  display: flex;
+  gap: 8px;
 }
 
 .event-editor-ghost-btn,

@@ -5,6 +5,27 @@ export const SNAP_MINUTES = 30
 export const HORIZONTAL_SCROLL_DOMINANCE = 1.35
 export const HORIZONTAL_SCROLL_LOCK_MS = 220
 export const WEEK_OFFSETS = [-1, 0, 1]
+export const EVENT_COLORS = {
+  orange: {
+    label: 'Orange',
+    solid: 'rgb(255, 149, 64)',
+    muted: 'rgba(255, 149, 64, 0.12)',
+    light: 'rgba(255, 149, 64, 0.4)',
+  },
+  purple: {
+    label: 'Purple',
+    solid: 'rgb(186, 104, 255)',
+    muted: 'rgba(186, 104, 255, 0.12)',
+    light: 'rgba(186, 104, 255, 0.4)',
+  },
+  blue: {
+    label: 'Blue',
+    solid: 'rgb(76, 156, 255)',
+    muted: 'rgba(76, 156, 255, 0.12)',
+    light: 'rgba(76, 156, 255, 0.4)',
+  },
+}
+export const EVENT_COLOR_KEYS = Object.keys(EVENT_COLORS)
 export const HOURS = Array.from(
   { length: END_HOUR - START_HOUR },
   (_, i) => i + START_HOUR,
@@ -39,6 +60,19 @@ export function formatSelectionRange(selection) {
 
 export function getDateKey(date) {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+}
+
+export function getEventColorStyle(colorKey) {
+  const color = EVENT_COLORS[colorKey]
+  if (!color) {
+    return {}
+  }
+
+  return {
+    '--event-bg': color.muted,
+    '--event-border': color.solid,
+    '--event-bg-editing': color.light,
+  }
 }
 
 export function clamp(value, min, max) {

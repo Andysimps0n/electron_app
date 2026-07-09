@@ -63,7 +63,3 @@
   cursor: pointer;
 }
 
-.sidebar-panel-toggle:hover {
-  color: var(--black-500);
-  background: var(--black-100);
-}

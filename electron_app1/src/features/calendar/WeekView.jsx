@@ -16,9 +16,12 @@ import {
   clamp,
   dragTimeBlock,
   END_HOUR,
+  EVENT_COLOR_KEYS,
+  EVENT_COLORS,
   formatDigitalClock,
   formatSelectionRange,
   getDateKey,
+  getEventColorStyle,
   getScrollTopForCurrentTime,
   HORIZONTAL_SCROLL_DOMINANCE,
   HORIZONTAL_SCROLL_LOCK_MS,
@@ -48,7 +51,9 @@ export default function WeekView({
   const weekScrollOffsetRef = useRef(0)
   const reverseScrollRef = useRef(reverseScroll)
   const horizontalScrollLockTimerRef = useRef(null)
+  const horizontalScrollLockedTimerRef = useRef(null)
   const verticalScrollLockedRef = useRef(false)
+  const horizontalScrollLockedRef = useRef(false)
   selectedDateRef.current = selectedDate
   reverseScrollRef.current = reverseScroll
   const weekDates = getWeekDates(selectedDate)
@@ -57,6 +62,7 @@ export default function WeekView({
   const [editingEventId, setEditingEventId] = useState(null)
   const [eventTitle, setEventTitle] = useState('')
   const [eventDetails, setEventDetails] = useState('')
+  const [eventColor, setEventColor] = useState(null)
   const [editorFlipY, setEditorFlipY] = useState(false)
   const { events, createEvent, updateEvent, deleteEvent } = useCalendarEvents()
   const [now, setNow] = useState(() => new Date())
@@ -147,6 +153,8 @@ export default function WeekView({
   }
 
   function lockVerticalScroll() {
+    horizontalScrollLockedRef.current = false
+    window.clearTimeout(horizontalScrollLockedTimerRef.current)
     verticalScrollLockedRef.current = true
     setVerticalScrollLocked(true)
     window.clearTimeout(horizontalScrollLockTimerRef.current)
@@ -162,8 +170,27 @@ export default function WeekView({
     setVerticalScrollLocked(false)
   }
 
+  function lockHorizontalScroll() {
+    verticalScrollLockedRef.current = false
+    setVerticalScrollLocked(false)
+    window.clearTimeout(horizontalScrollLockTimerRef.current)
+    horizontalScrollLockedRef.current = true
+    window.clearTimeout(horizontalScrollLockedTimerRef.current)
+    horizontalScrollLockedTimerRef.current = window.setTimeout(() => {
+      horizontalScrollLockedRef.current = false
+    }, HORIZONTAL_SCROLL_LOCK_MS)
+  }
+
+  function unlockHorizontalScroll() {
+    window.clearTimeout(horizontalScrollLockedTimerRef.current)
+    horizontalScrollLockedRef.current = false
+  }
+
   useEffect(() => {
-    return () => window.clearTimeout(horizontalScrollLockTimerRef.current)
+    return () => {
+      window.clearTimeout(horizontalScrollLockTimerRef.current)
+      window.clearTimeout(horizontalScrollLockedTimerRef.current)
+    }
   }, [])
 
   function getWeekViewportWidth() {
@@ -186,6 +213,7 @@ export default function WeekView({
     setDraftSelection(null)
     setEventTitle('')
     setEventDetails('')
+    setEventColor(null)
   }
 
   function handleDeleteEvent() {
@@ -206,6 +234,7 @@ export default function WeekView({
     })
     setEventTitle(calendarEvent.title)
     setEventDetails(calendarEvent.details ?? '')
+    setEventColor(calendarEvent.color ?? null)
     setDraftSelection(null)
   }
 
@@ -215,6 +244,10 @@ export default function WeekView({
   }
 
   function applyWeekScrollDelta(rawDelta) {
+    if (horizontalScrollLockedRef.current) {
+      return
+    }
+
     const delta = getScrollDelta(rawDelta)
     if (delta === 0) {
       return
@@ -269,7 +302,23 @@ export default function WeekView({
         return
       }
 
+      if (horizontalScrollLockedRef.current) {
+        if (absX > 0 && absX > absY * HORIZONTAL_SCROLL_DOMINANCE) {
+          event.preventDefault()
+          lockHorizontalScroll()
+          return
+        }
+
+        if (absY > 0) {
+          lockHorizontalScroll()
+        }
+        return
+      }
+
       if (absX === 0 || absX <= absY * HORIZONTAL_SCROLL_DOMINANCE) {
+        if (absY > 0) {
+          lockHorizontalScroll()
+        }
         return
       }
 
@@ -278,8 +327,16 @@ export default function WeekView({
       applyWeekScrollDelta(deltaX)
     }
 
+    function handleScroll() {
+      lockHorizontalScroll()
+    }
+
     wrapper.addEventListener('wheel', handleWheel, { passive: false })
-    return () => wrapper.removeEventListener('wheel', handleWheel)
+    wrapper.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      wrapper.removeEventListener('wheel', handleWheel)
+      wrapper.removeEventListener('scroll', handleScroll)
+    }
   }, [onWeekChange])
 
   useEffect(() => {
@@ -374,7 +431,7 @@ export default function WeekView({
 
     // Prefer the center week panel so partial horizontal scroll does not
     // mis-detect adjacent weeks during vertical drag interactions.
-    const panelSearchOrder = currentWeekOnly ? [1] : [1, 0, 2]
+    const panelSearchOrder = currentWeekOnly ? [1, 2, 0] : [1, 0, 2]
 
     for (const panelIndex of panelSearchOrder) {
       const panel = track.children[panelIndex]
@@ -386,11 +443,10 @@ export default function WeekView({
 
       for (let index = 0; index < columns.length; index++) {
         const rect = columns[index].getBoundingClientRect()
-        const isLastColumn = index === columns.length - 1
 
         if (
           event.clientX >= rect.left &&
-          (event.clientX < rect.right || isLastColumn) &&
+          event.clientX < rect.right &&
           event.clientY >= rect.top &&
           event.clientY <= rect.bottom
         ) {
@@ -472,14 +528,18 @@ export default function WeekView({
     }
   }
 
-  function getEventStyle(selection) {
+  function getEventStyle(event) {
+    const colorKey =
+      editingEventId === event.id ? eventColor : event.color
+
     return {
       '--selection-top': `${
-        ((selection.startMinute - START_HOUR * 60) / 60) * CELL_HEIGHT
+        ((event.startMinute - START_HOUR * 60) / 60) * CELL_HEIGHT
       }px`,
       '--selection-height': `${
-        ((selection.endMinute - selection.startMinute) / 60) * CELL_HEIGHT
+        ((event.endMinute - event.startMinute) / 60) * CELL_HEIGHT
       }px`,
+      ...getEventColorStyle(colorKey),
     }
   }
 
@@ -501,7 +561,7 @@ export default function WeekView({
   function getEditorClassName(selection) {
     return [
       'event-editor',
-      selection.dayIndex > 4 && 'event-editor-flip-x',
+      selection.dayIndex > 3 && 'event-editor-flip-x',
       editorFlipY && 'event-editor-flip-y',
     ]
       .filter(Boolean)
@@ -522,7 +582,7 @@ export default function WeekView({
       return
     }
 
-    const startSlot = getCurrentWeekPointerSlot(event)
+    const startSlot = resolvePointerSlot(event)
     if (!startSlot) {
       return
     }
@@ -595,6 +655,7 @@ export default function WeekView({
           interaction.mode === 'pending-event-drag'
             ? 'drag-event'
             : 'drag-selection'
+        lockHorizontalScroll()
       }
 
       const currentSlot = resolvePointerSlot(event)
@@ -635,6 +696,7 @@ export default function WeekView({
 
     if (
       !verticalSelectIntent &&
+      !horizontalScrollLockedRef.current &&
       (interaction.mode === 'week-scroll' ||
         (interaction.mode === 'pending' &&
           Math.abs(dx) > 8 &&
@@ -659,6 +721,7 @@ export default function WeekView({
 
     if (Math.abs(dy) > 4 || interaction.mode === 'selecting') {
       interaction.mode = 'selecting'
+      lockHorizontalScroll()
       setDraftSelection(buildSelection(interaction.startSlot, currentSlot))
     }
   }
@@ -680,6 +743,8 @@ export default function WeekView({
       unlockVerticalScroll()
       return
     }
+
+    unlockHorizontalScroll()
 
     if (
       interaction.mode === 'resize-selection' ||
@@ -708,7 +773,7 @@ export default function WeekView({
       return
     }
 
-    const endSlot = getCurrentWeekPointerSlot(event) ?? interaction.startSlot
+    const endSlot = resolvePointerSlot(event) ?? interaction.startSlot
     const selection =
       draftSelection ?? buildSelection(interaction.startSlot, endSlot)
 
@@ -721,6 +786,7 @@ export default function WeekView({
   function handleGridPointerCancel() {
     interactionRef.current = null
     setDraftSelection(null)
+    unlockHorizontalScroll()
   }
 
   function handleResizeSelectionPointerDown(event, edge, selection) {
@@ -730,6 +796,7 @@ export default function WeekView({
 
     event.stopPropagation()
     daysBodyViewportRef.current.setPointerCapture(event.pointerId)
+    lockHorizontalScroll()
     interactionRef.current = {
       mode: 'resize-selection',
       pointerId: event.pointerId,
@@ -802,6 +869,7 @@ export default function WeekView({
 
     event.stopPropagation()
     daysBodyViewportRef.current.setPointerCapture(event.pointerId)
+    lockHorizontalScroll()
     interactionRef.current = {
       mode: 'resize-event',
       pointerId: event.pointerId,
@@ -833,6 +901,7 @@ export default function WeekView({
     setEditingEventId(null)
     setEventTitle('')
     setEventDetails('')
+    setEventColor(null)
   }
 
   function handleSaveEvent() {
@@ -847,6 +916,7 @@ export default function WeekView({
       updateEvent(editingEventId, {
         title,
         details,
+        color: eventColor,
         dayIndex: editorSelection.dayIndex,
         startMinute: editorSelection.startMinute,
         endMinute: editorSelection.endMinute,
@@ -858,6 +928,7 @@ export default function WeekView({
         dateKey: getDateKey(weekDates[editorSelection.dayIndex]),
         title,
         details,
+        color: eventColor,
         ...editorSelection,
       })
     }
@@ -953,7 +1024,10 @@ export default function WeekView({
             className={`week-view-selection${
               editorSelection ? ' week-view-selection-editing' : ''
             }`}
-            style={getSelectionStyle(visibleSelection)}
+            style={{
+              ...getSelectionStyle(visibleSelection),
+              ...getEventColorStyle(eventColor),
+            }}
             onPointerDown={(event) =>
               handleSelectionPointerDown(event, visibleSelection)
             }
@@ -1004,16 +1078,39 @@ export default function WeekView({
               />
             </label>
             <div className="event-editor-actions">
-              <button
-                type="button"
-                className="event-editor-ghost-btn"
-                onClick={dismissEditor}
+              <div
+                className="event-editor-color-swatches"
+                role="group"
+                aria-label="Event color"
               >
-                Cancel
-              </button>
-              <button type="submit" className="event-editor-save-btn">
-                Save
-              </button>
+                {EVENT_COLOR_KEYS.map((colorKey) => (
+                  <button
+                    key={colorKey}
+                    type="button"
+                    className={`event-editor-color-swatch${
+                      eventColor === colorKey
+                        ? ' event-editor-color-swatch-selected'
+                        : ''
+                    }`}
+                    style={{ background: EVENT_COLORS[colorKey].solid }}
+                    aria-label={EVENT_COLORS[colorKey].label}
+                    aria-pressed={eventColor === colorKey}
+                    onClick={() => setEventColor(colorKey)}
+                  />
+                ))}
+              </div>
+              <div className="event-editor-action-buttons">
+                <button
+                  type="button"
+                  className="event-editor-ghost-btn"
+                  onClick={dismissEditor}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="event-editor-save-btn">
+                  Save
+                </button>
+              </div>
             </div>
           </form>
         )}
@@ -1033,20 +1130,6 @@ export default function WeekView({
           >
             <PanelIcon />
           </button> 
-        
-        <div className="week-view-week-picker">
-          {!sidebarOpen && (
-            <button
-              type="button"
-              className="week-view-sidebar-reopen"
-              aria-label="Show sidebar"
-              onClick={onToggleSidebar}
-            >
-              <PanelIcon />
-            </button>
-          )}
-        </div>
-
         <div className="week-view-header-center">
           <div className="week-view-title-group">
             <h1 className="week-view-title">{formatMonthYearShort(selectedDate)}</h1>

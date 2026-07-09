@@ -7,8 +7,12 @@ function nowIso() {
   return new Date().toISOString()
 }
 
+const EVENT_COLOR_KEYS = new Set(['orange', 'purple', 'blue'])
+
 function normalizeEvent(event) {
   const createdAt = event.createdAt ?? nowIso()
+  const color = EVENT_COLOR_KEYS.has(event.color) ? event.color : null
+
   return {
     id: event.id,
     dateKey: event.dateKey,
@@ -17,6 +21,7 @@ function normalizeEvent(event) {
     dayIndex: Number(event.dayIndex ?? 0),
     startMinute: Number(event.startMinute ?? 0),
     endMinute: Number(event.endMinute ?? 30),
+    color,
     createdAt,
     updatedAt: event.updatedAt ?? createdAt,
   }
