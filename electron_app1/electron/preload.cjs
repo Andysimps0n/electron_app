@@ -7,4 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // with the auth code once the loopback server catches the redirect.
   signInWithGoogle: (oauthUrl) =>
     ipcRenderer.invoke('auth:sign-in-with-google', oauthUrl),
+
+  // Open an http(s) URL in the user's default browser (e.g. Coupang search).
+  openExternal: (url) => ipcRenderer.invoke('shell:open-external', url),
 })

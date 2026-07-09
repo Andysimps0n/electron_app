@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import CalendarHeader from './CalendarHeader'
 import CalendarSidebar from './CalendarSidebar'
+import MonthView from './MonthView'
 import SettingsPanel from './SettingsPanel'
 import WeekView from './WeekView'
 import { getMockEventDates, loadReverseScrollSetting } from './calendarUtils'
@@ -42,6 +44,15 @@ export default function Calendar({
     }
   }
 
+  function handleViewChange(nextView) {
+    setView(nextView)
+    if (nextView === 'month' && !isSameMonth(selectedDate, viewedMonth)) {
+      setViewedMonth(
+        new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+      )
+    }
+  }
+
   function handlePreviousMonth() {
     setViewedMonth(
       (current) => new Date(current.getFullYear(), current.getMonth() - 1, 1),
@@ -72,16 +83,31 @@ export default function Calendar({
           onToggleSidebar={() => setSidebarOpen((open) => !open)}
         />
       </aside>
-      <WeekView
-        selectedDate={selectedDate}
-        today={today}
-        view={view}
-        sidebarOpen={sidebarOpen}
-        reverseScroll={reverseScroll}
-        onToggleSidebar={() => setSidebarOpen((open) => !open)}
-        onViewChange={setView}
-        onWeekChange={handleWeekChange}
-      />
+      <div className="calendar-main">
+        <CalendarHeader
+          view={view}
+          selectedDate={selectedDate}
+          viewedMonth={viewedMonth}
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen((open) => !open)}
+          onViewChange={handleViewChange}
+        />
+        {view === 'week' ? (
+          <WeekView
+            selectedDate={selectedDate}
+            today={today}
+            reverseScroll={reverseScroll}
+            onWeekChange={handleWeekChange}
+          />
+        ) : (
+          <MonthView
+            viewedMonth={viewedMonth}
+            selectedDate={selectedDate}
+            today={today}
+            onDateSelect={handleDateSelect}
+          />
+        )}
+      </div>
       {settingsVisible && (
         <SettingsPanel
           reverseScroll={reverseScroll}

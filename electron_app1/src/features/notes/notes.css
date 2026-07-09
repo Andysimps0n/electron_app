@@ -341,3 +341,49 @@
   cursor: pointer;
 }
 
+/* Floating AI suggestion chip next to a text selection */
+.note-selection-suggestion {
+  position: fixed;
+  z-index: 40;
+  pointer-events: auto;
+}
+
+.note-selection-suggestion-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: min(280px, calc(100vw - 24px));
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-green);
+  background: var(--bg-main);
+  color: var(--accent-green);
+  font: var(--body-sm-bold);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+.note-selection-suggestion-chip:hover {
+  background: var(--accent-green-muted);
+}
+
+.note-selection-suggestion-loading,
+.note-selection-suggestion-error {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-main);
+  color: var(--black-300);
+  font: var(--body-sm);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+}
+
+.note-selection-suggestion-error {
+  color: var(--black-500);
+}
+

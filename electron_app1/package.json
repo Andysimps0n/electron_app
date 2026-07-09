@@ -1,7 +1,9 @@
 {
   "name": "electron_app1",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Vibe Focus — calendar, timer, and focus music desktop app",
+  "author": "Vibe Focus",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
@@ -9,11 +11,13 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "electron:dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\""
+    "electron:dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:dist": "vite build && electron-builder --mac dmg --win nsis",
+    "electron:dist:mac": "vite build && electron-builder --mac dmg",
+    "electron:dist:win": "vite build && electron-builder --win nsis"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.0",
-    "electron": "^42.5.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
@@ -22,8 +26,39 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
     "concurrently": "^10.0.3",
+    "electron": "^42.5.0",
+    "electron-builder": "^26.0.12",
     "oxlint": "^1.69.0",
     "vite": "^8.1.0",
     "wait-on": "^9.0.10"
+  },
+  "build": {
+    "appId": "com.vibefocus.app",
+    "productName": "Vibe Focus",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.productivity",
+      "identity": null
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false
+    },
+    "icon": "src/assets/icon.png"
   }
 }

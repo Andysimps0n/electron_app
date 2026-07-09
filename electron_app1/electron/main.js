@@ -33,6 +33,25 @@ app.whenReady().then(() => {
     return callbackPromise
   })
 
+  // Open http(s) links in the system browser (AI suggestion chips, etc.).
+  // Reject anything that is not http/https so a compromised renderer cannot
+  // open local files or custom protocols.
+  ipcMain.handle('shell:open-external', async (_event, url) => {
+    if (typeof url !== 'string') {
+      throw new Error('openExternal requires a string URL')
+    }
+    let parsed
+    try {
+      parsed = new URL(url)
+    } catch {
+      throw new Error('openExternal received an invalid URL')
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      throw new Error('openExternal only allows http(s) URLs')
+    }
+    await shell.openExternal(parsed.toString())
+  })
+
   createWindow()
 
   app.on('activate', () => {

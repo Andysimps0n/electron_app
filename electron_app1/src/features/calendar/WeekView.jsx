@@ -1,13 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { PanelIcon } from '../../shared/icons'
-import AuthButton from '../../shared/AuthButton'
-import MusicMuteButton from '../../shared/MusicMuteButton'
 import { useCalendarEvents } from '../../hooks/useCalendarEvents'
 import {
   addDays,
   DAY_LABELS,
   formatHour,
-  formatMonthYearShort,
   getWeekDates,
   isSameDay,
 } from '../../utils/dateUtils'
@@ -18,7 +14,6 @@ import {
   END_HOUR,
   EVENT_COLOR_KEYS,
   EVENT_COLORS,
-  formatDigitalClock,
   formatSelectionRange,
   getDateKey,
   getEventColorStyle,
@@ -35,11 +30,7 @@ import {
 export default function WeekView({
   selectedDate,
   today,
-  view,
-  sidebarOpen,
   reverseScroll,
-  onToggleSidebar,
-  onViewChange,
   onWeekChange,
 }) {
   const daysBodyViewportRef = useRef(null)
@@ -937,8 +928,6 @@ export default function WeekView({
   }
 
   const visibleSelection = editingEventId ? draftSelection : editorSelection ?? draftSelection
-  const digitalClock = formatDigitalClock(now)
-
   function renderWeekHeaders(weekOffset) {
     const dates = getWeekDates(addDays(selectedDate, weekOffset * 7))
 
@@ -1120,40 +1109,6 @@ export default function WeekView({
 
   return (
     <div className="week-view" ref={weekViewRef}>
-      <header className="week-view-header">
-          <button
-            type="button"
-            className="sidebar-panel-toggle"
-            aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
-            aria-pressed={sidebarOpen}
-            onClick={onToggleSidebar}
-          >
-            <PanelIcon />
-          </button> 
-        <div className="week-view-header-center">
-          <div className="week-view-title-group">
-            <h1 className="week-view-title">{formatMonthYearShort(selectedDate)}</h1>
-          </div>
-          <time
-            className="week-view-clock"
-            dateTime={now.toISOString()}
-            aria-label={`Current time ${digitalClock.hours}:${digitalClock.minutes} ${digitalClock.period}`}
-          >
-            <span className="week-view-clock-digit">{digitalClock.hours}</span>
-            <span className="week-view-clock-separator" aria-hidden="true">
-              :
-            </span>
-            <span className="week-view-clock-digit">{digitalClock.minutes}</span>
-            <span className="week-view-clock-period">{digitalClock.period}</span>
-          </time>
-        </div>
-
-        <div className="week-view-header-actions">
-          <MusicMuteButton />
-          <AuthButton />
-        </div>
-      </header>
-
       <div
         className={`week-view-grid-wrapper${verticalScrollLocked ? ' week-view-grid-wrapper-lock-y' : ''}`}
         ref={gridWrapperRef}

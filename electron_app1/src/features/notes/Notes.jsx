@@ -13,6 +13,7 @@ import {
   handleListKeyDown,
   tryToggleChecklistItem,
 } from '../../utils/noteListEditor'
+import NoteSelectionSuggestion from './NoteSelectionSuggestion'
 import '../../shared/sidebar.css'
 import './notes.css'
 
@@ -341,6 +342,8 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
           spellCheck="false"
         />
       </div>
+
+      <NoteSelectionSuggestion editorRef={editorRef} noteId={note.id} />
     </div>
   )
 }

@@ -1,0 +1,70 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: mac
+          - os: windows-latest
+            platform: win
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        working-directory: electron_app1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: electron_app1/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and package
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # Unsigned builds — skip macOS identity lookup
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          if [ "${{ matrix.platform }}" = "mac" ]; then
+            npm run electron:dist:mac
+          else
+            npm run electron:dist:win
+          fi
+        shell: bash
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('manual-{0}', github.run_number) }}
+          name: ${{ github.ref_type == 'tag' && github.ref_name || format('Manual build {0}', github.run_number) }}
+          draft: ${{ github.ref_type != 'tag' }}
+          files: |
+            electron_app1/release/*.dmg
+            electron_app1/release/*.exe
+            electron_app1/release/*.yml
+            electron_app1/release/*.yaml
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
