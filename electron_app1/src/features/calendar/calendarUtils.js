@@ -7,22 +7,28 @@ export const HORIZONTAL_SCROLL_LOCK_MS = 220
 export const WEEK_OFFSETS = [-1, 0, 1]
 export const EVENT_COLORS = {
   orange: {
-    label: 'Orange',
+    label: '주황',
     solid: 'rgb(255, 149, 64)',
     muted: 'rgba(255, 149, 64, 0.12)',
     light: 'rgba(255, 149, 64, 0.4)',
   },
   purple: {
-    label: 'Purple',
+    label: '보라',
     solid: 'rgb(186, 104, 255)',
     muted: 'rgba(186, 104, 255, 0.12)',
     light: 'rgba(186, 104, 255, 0.4)',
   },
   blue: {
-    label: 'Blue',
+    label: '파랑',
     solid: 'rgb(76, 156, 255)',
     muted: 'rgba(76, 156, 255, 0.12)',
     light: 'rgba(76, 156, 255, 0.4)',
+  },
+  green: {
+    label: '초록',
+    solid: 'rgb(112, 243, 80)',
+    muted: 'rgba(112, 243, 80, 0.12)',
+    light: 'rgba(112, 243, 80, 0.4)',
   },
 }
 export const EVENT_COLOR_KEYS = Object.keys(EVENT_COLORS)
@@ -45,9 +51,9 @@ export function getMockEventDates(referenceDate) {
 export function formatMinutes(totalMinutes) {
   const hour = Math.floor(totalMinutes / 60)
   const minute = totalMinutes % 60
-  const period = hour >= 12 ? 'PM' : 'AM'
+  const period = hour >= 12 ? '오후' : '오전'
   const displayHour = hour % 12 === 0 ? 12 : hour % 12
-  return `${displayHour}:${String(minute).padStart(2, '0')} ${period}`
+  return `${period} ${displayHour}:${String(minute).padStart(2, '0')}`
 }
 
 export { formatDigitalClock } from '../../shared/timeUtils'
@@ -60,6 +66,51 @@ export function formatSelectionRange(selection) {
 
 export function getDateKey(date) {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+}
+
+/** How far ahead repeating events are materialised as separate instances. */
+export const REPEAT_HORIZON_DAYS = 12 * 7
+
+/**
+ * Builds the list of dates for a repeating event, including the start date.
+ * Used when saving: we create one stored event per occurrence (simple model).
+ */
+export function getRepeatOccurrenceDates(
+  startDate,
+  { repeat = 'none', interval = 1, unit = 'day' } = {},
+) {
+  const start = new Date(startDate)
+  start.setHours(0, 0, 0, 0)
+
+  if (repeat === 'none' || !repeat) {
+    return [start]
+  }
+
+  let stepDays
+  if (repeat === 'daily') {
+    stepDays = 1
+  } else if (repeat === 'weekly') {
+    stepDays = 7
+  } else if (repeat === 'custom') {
+    const safeInterval = Math.max(1, Number(interval) || 1)
+    stepDays = unit === 'week' ? safeInterval * 7 : safeInterval
+  } else {
+    return [start]
+  }
+
+  const dates = [start]
+  const end = new Date(start)
+  end.setDate(end.getDate() + REPEAT_HORIZON_DAYS)
+
+  let cursor = new Date(start)
+  cursor.setDate(cursor.getDate() + stepDays)
+
+  while (cursor.getTime() <= end.getTime()) {
+    dates.push(new Date(cursor))
+    cursor.setDate(cursor.getDate() + stepDays)
+  }
+
+  return dates
 }
 
 export function getEventColorStyle(colorKey) {

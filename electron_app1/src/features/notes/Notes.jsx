@@ -63,7 +63,7 @@ function getNoteDisplayTitle(note) {
     return plainText.slice(0, 48) + (plainText.length > 48 ? '…' : '')
   }
 
-  return 'Untitled'
+  return '제목 없음'
 }
 
 function sortNotesByRecent(notes) {
@@ -76,13 +76,13 @@ function NotesSidebar({ notes, activeNoteId, onSelectNote, onCreateNote }) {
   return (
     <aside className="sidebar notes-sidebar">
       <div className="notes-sidebar-header">
-        <h2 className="sidebar-title">Recent Notes</h2>
+        <h2 className="sidebar-title">최근 노트</h2>
         <button
           type="button"
           className="notes-sidebar-new-btn"
           onClick={onCreateNote}
         >
-          + New
+          + 새 노트
         </button>
       </div>
 
@@ -100,7 +100,7 @@ function NotesSidebar({ notes, activeNoteId, onSelectNote, onCreateNote }) {
                 {getNoteDisplayTitle(note)}
               </span>
               <span className="notes-sidebar-item-date">
-                {new Date(note.createdAt).toLocaleDateString(undefined, {
+                {new Date(note.createdAt).toLocaleDateString('ko-KR', {
                   month: 'short',
                   day: 'numeric',
                 })}
@@ -142,7 +142,7 @@ function NoteFormatToolbar({ editorRef, onContentChange }) {
   }
 
   return (
-    <div className="notes-format-toolbar" role="toolbar" aria-label="Note formatting">
+    <div className="notes-format-toolbar" role="toolbar" aria-label="노트 서식">
       <div className="notes-format-group">
         <button
           type="button"
@@ -154,7 +154,7 @@ function NoteFormatToolbar({ editorRef, onContentChange }) {
             )
           }
         >
-          Title
+          제목
         </button>
         <button
           type="button"
@@ -166,7 +166,7 @@ function NoteFormatToolbar({ editorRef, onContentChange }) {
             )
           }
         >
-          Subtitle
+          부제목
         </button>
         <button
           type="button"
@@ -178,7 +178,7 @@ function NoteFormatToolbar({ editorRef, onContentChange }) {
             )
           }
         >
-          Normal
+          본문
         </button>
       </div>
 
@@ -188,7 +188,7 @@ function NoteFormatToolbar({ editorRef, onContentChange }) {
         <button
           type="button"
           className="notes-format-btn notes-format-btn-icon"
-          aria-label="Bold"
+          aria-label="굵게"
           onMouseDown={(event) => event.preventDefault()}
           onClick={() =>
             run((editor) =>
@@ -201,7 +201,7 @@ function NoteFormatToolbar({ editorRef, onContentChange }) {
         <button
           type="button"
           className="notes-format-btn notes-format-btn-icon"
-          aria-label="Highlight"
+          aria-label="하이라이트"
           onMouseDown={(event) => event.preventDefault()}
           onClick={() =>
             run((editor) =>
@@ -224,7 +224,7 @@ function NoteFormatToolbar({ editorRef, onContentChange }) {
         <button
           type="button"
           className="notes-format-btn notes-format-btn-icon"
-          aria-label="Checklist"
+          aria-label="체크리스트"
           onMouseDown={(event) => event.preventDefault()}
           onClick={() =>
             run((editor) => toggleList(editor, onContentChange, true))
@@ -235,7 +235,7 @@ function NoteFormatToolbar({ editorRef, onContentChange }) {
         <button
           type="button"
           className="notes-format-btn notes-format-btn-icon"
-          aria-label="Bulleted list"
+          aria-label="글머리 기호 목록"
           onMouseDown={(event) => event.preventDefault()}
           onClick={() =>
             run((editor) => toggleList(editor, onContentChange, false))
@@ -250,6 +250,9 @@ function NoteFormatToolbar({ editorRef, onContentChange }) {
 
 function NoteEditor({ note, onTitleChange, onContentChange }) {
   const editorRef = useRef(null)
+  // Same Hangul IME pattern as TodoList: keep "composing" true until after
+  // the current event turn so a confirm-Enter is not treated as a new bullet.
+  const isComposingRef = useRef(false)
 
   useEffect(() => {
     const editor = editorRef.current
@@ -266,8 +269,22 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
       return
     }
 
+    function handleCompositionStart() {
+      isComposingRef.current = true
+    }
+
+    function handleCompositionEnd() {
+      window.setTimeout(() => {
+        isComposingRef.current = false
+      }, 0)
+    }
+
     function handleKeyDown(event) {
-      if (handleListKeyDown(editor, event)) {
+      if (
+        handleListKeyDown(editor, event, {
+          isComposing: isComposingRef.current,
+        })
+      ) {
         onContentChange(editor.innerHTML)
         return
       }
@@ -292,8 +309,14 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
       }
     }
 
+    editor.addEventListener('compositionstart', handleCompositionStart)
+    editor.addEventListener('compositionend', handleCompositionEnd)
     editor.addEventListener('keydown', handleKeyDown)
-    return () => editor.removeEventListener('keydown', handleKeyDown)
+    return () => {
+      editor.removeEventListener('compositionstart', handleCompositionStart)
+      editor.removeEventListener('compositionend', handleCompositionEnd)
+      editor.removeEventListener('keydown', handleKeyDown)
+    }
   }, [note.id, onContentChange])
 
   function handleInput() {
@@ -322,7 +345,7 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
         <input
           type="text"
           className="note-editor-title"
-          placeholder="Note title"
+          placeholder="노트 제목"
           value={note.title}
           onChange={(event) => onTitleChange(event.target.value)}
         />
@@ -333,11 +356,11 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
           contentEditable
           role="textbox"
           aria-multiline="true"
-          aria-label="Note content"
-          data-placeholder="Start writing,,,"
+          aria-label="노트 내용"
+          data-placeholder="작성을 시작하세요..."
           onInput={handleInput}
           onMouseDown={handleMouseDown}
-          placeholder="Start writing..."
+          placeholder="작성을 시작하세요..."
           suppressContentEditableWarning
           spellCheck="false"
         />
@@ -400,9 +423,9 @@ export default function Notes({ defaultSidebarOpen = true }) {
           />
         </aside>
         <div className="notes-empty">
-          <p>No notes yet.</p>
+          <p>아직 노트가 없습니다.</p>
           <button type="button" onClick={handleCreateNote}>
-            Create your first note
+            첫 노트 만들기
           </button>
         </div>
       </div>
@@ -429,7 +452,7 @@ export default function Notes({ defaultSidebarOpen = true }) {
             <button
               type="button"
               className={`notes-sidebar-toggle${sidebarOpen ? ' notes-sidebar-toggle-active' : ''}`}
-              aria-label={sidebarOpen ? 'Hide notes sidebar' : 'Show notes sidebar'}
+              aria-label={sidebarOpen ? '노트 사이드바 숨기기' : '노트 사이드바 보이기'}
               aria-pressed={sidebarOpen}
               onClick={() => setSidebarOpen((open) => !open)}
             >

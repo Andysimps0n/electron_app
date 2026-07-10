@@ -37,6 +37,13 @@ export default function Calendar({
     }
   }
 
+  // Month grid click: select that day, then jump to its week.
+  // WeekView already derives the visible week from selectedDate.
+  function handleMonthDateSelect(date) {
+    handleDateSelect(date)
+    setView('week')
+  }
+
   function handleWeekChange(date) {
     setSelectedDate(date)
     if (!isSameMonth(date, viewedMonth)) {
@@ -104,7 +111,7 @@ export default function Calendar({
             viewedMonth={viewedMonth}
             selectedDate={selectedDate}
             today={today}
-            onDateSelect={handleDateSelect}
+            onDateSelect={handleMonthDateSelect}
           />
         )}
       </div>

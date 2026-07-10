@@ -16,7 +16,7 @@ function normalizeEvent(event) {
   return {
     id: event.id,
     dateKey: event.dateKey,
-    title: event.title ?? 'New event',
+    title: event.title ?? '새 일정',
     details: event.details ?? '',
     dayIndex: Number(event.dayIndex ?? 0),
     startMinute: Number(event.startMinute ?? 0),

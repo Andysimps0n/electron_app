@@ -316,8 +316,23 @@ function outdentListItem(li) {
   })
 }
 
-export function handleListKeyDown(editor, event) {
-  if (event.key === ' ' && tryConvertMarkdownBullet(editor)) {
+/**
+ * Hangul (and other IMEs) mark composition with isComposing / keyCode 229.
+ * Enter during that window only confirms the syllable — treating it as a list
+ * split creates a double line break when the real Enter follows.
+ */
+function isImeComposing(event) {
+  return Boolean(
+    event.isComposing ||
+      event.keyCode === 229 ||
+      event.which === 229,
+  )
+}
+
+export function handleListKeyDown(editor, event, options = {}) {
+  const composing = options.isComposing || isImeComposing(event)
+
+  if (event.key === ' ' && !composing && tryConvertMarkdownBullet(editor)) {
     event.preventDefault()
     return true
   }
@@ -328,6 +343,11 @@ export function handleListKeyDown(editor, event) {
   }
 
   if (event.key === 'Enter' && !event.shiftKey) {
+    // Let the IME finish confirming the character; do not create a new item yet.
+    if (composing) {
+      return false
+    }
+
     event.preventDefault()
 
     if (isListItemEmpty(listItem)) {

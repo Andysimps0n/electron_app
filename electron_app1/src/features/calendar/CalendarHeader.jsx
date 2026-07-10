@@ -27,7 +27,7 @@ export default function CalendarHeader({
       <button
         type="button"
         className="sidebar-panel-toggle"
-        aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+        aria-label={sidebarOpen ? '사이드바 숨기기' : '사이드바 보이기'}
         aria-pressed={sidebarOpen}
         onClick={onToggleSidebar}
       >
@@ -43,7 +43,7 @@ export default function CalendarHeader({
         <time
           className="calendar-header-clock"
           dateTime={now.toISOString()}
-          aria-label={`Current time ${digitalClock.hours}:${digitalClock.minutes} ${digitalClock.period}`}
+          aria-label={`현재 시각 ${digitalClock.hours}:${digitalClock.minutes} ${digitalClock.period}`}
         >
           <span className="calendar-header-clock-digit">{digitalClock.hours}</span>
           <span className="calendar-header-clock-separator" aria-hidden="true">
@@ -55,14 +55,14 @@ export default function CalendarHeader({
           <span className="calendar-header-clock-period">{digitalClock.period}</span>
         </time>
 
-        <div className="view-toggle" role="group" aria-label="Calendar view">
+        <div className="view-toggle" role="group" aria-label="캘린더 보기">
           <button
             type="button"
             className={`view-toggle-btn${view === 'month' ? ' view-toggle-btn-active' : ''}`}
             aria-pressed={view === 'month'}
             onClick={() => onViewChange('month')}
           >
-            MONTH
+            월
           </button>
           <button
             type="button"
@@ -70,7 +70,7 @@ export default function CalendarHeader({
             aria-pressed={view === 'week'}
             onClick={() => onViewChange('week')}
           >
-            WEEK
+            주
           </button>
         </div>
       </div>

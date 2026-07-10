@@ -8,8 +8,8 @@ import './todoList.css'
 const IME_ECHO_GUARD_MS = 300
 
 export default function TodoList({
-  title = 'Tasks',
-  placeholder = 'Add a task...',
+  title = '할 일',
+  placeholder = '할 일 추가...',
 }) {
   const { todos, addTodo, toggleTodo, deleteTodo } = useCalendarTodos()
   const inputRef = useRef(null)
@@ -142,9 +142,9 @@ export default function TodoList({
                   type="checkbox"
                   checked={todo.done}
                   onChange={() => toggleTodo(todo.id)}
-                  aria-label={`Mark "${todo.text}" as ${
-                    todo.done ? 'incomplete' : 'complete'
-                  }`}
+                  aria-label={`"${todo.text}"을(를) ${
+                    todo.done ? '미완료' : '완료'
+                  }(으)로 표시`}
                 />
                 <span className="sidebar-todos-checkmark" />
               </label>
@@ -159,7 +159,7 @@ export default function TodoList({
               <button
                 type="button"
                 className="sidebar-todos-delete-btn"
-                aria-label={`Delete "${todo.text}"`}
+                aria-label={`"${todo.text}" 삭제`}
                 onClick={() => deleteTodo(todo.id)}
               >
                 ×
@@ -177,7 +177,7 @@ export default function TodoList({
         placeholder={placeholder}
         defaultValue=""
         rows={todos.length > 0 ? 1 : 4}
-        aria-label="Add tasks"
+        aria-label="할 일 추가"
         onCompositionStart={handleCompositionStart}
         onCompositionEnd={handleCompositionEnd}
         onKeyDown={handleTodoKeyDown}

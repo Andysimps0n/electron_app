@@ -15,7 +15,7 @@ const POMODORO_PRESETS = [
 ]
 
 const DEFAULT_PRESET = POMODORO_PRESETS[0]
-const CLOCK_LOCALE = 'en-US'
+const CLOCK_LOCALE = 'ko-KR'
 
 function formatCountdown(totalSeconds) {
   const minutes = Math.floor(totalSeconds / 60)
@@ -54,7 +54,7 @@ function FocusDisplay({
 }) {
   const progress =
     totalSeconds > 0 ? ((totalSeconds - secondsRemaining) / totalSeconds) * 100 : 0
-  const phaseLabel = phase === 'focus' ? 'Focus' : 'Break'
+  const phaseLabel = phase === 'focus' ? '집중' : '휴식'
   const nextSessionNumber = phase === 'focus' ? completedSessions + 1 : completedSessions
 
   return (
@@ -62,7 +62,7 @@ function FocusDisplay({
       <div className="focus-display-header">
         <span className="focus-display-phase">{phaseLabel}</span>
         <span className="focus-display-session">
-          {phase === 'focus' ? `Session ${nextSessionNumber}` : `After session ${completedSessions}`}
+          {phase === 'focus' ? `세션 ${nextSessionNumber}` : `세션 ${completedSessions} 이후`}
         </span>
       </div>
 
@@ -89,8 +89,8 @@ function FocusDisplay({
 
       <p className="focus-display-hint">
         {phase === 'focus'
-          ? 'One block at a time. Pause if you need to step away.'
-          : 'Rest your eyes and stretch before the next block.'}
+          ? '한 블록씩 집중하세요. 자리를 비울 때는 일시정지하세요.'
+          : '다음 블록 전에 눈을 쉬게 하고 스트레칭하세요.'}
       </p>
 
       <div className="focus-display-controls">
@@ -101,7 +101,7 @@ function FocusDisplay({
             onClick={onStart}
             disabled={secondsRemaining === 0}
           >
-            {phase === 'focus' ? 'Start focus' : 'Start break'}
+            {phase === 'focus' ? '집중 시작' : '휴식 시작'}
           </button>
         ) : (
           <button
@@ -109,14 +109,14 @@ function FocusDisplay({
             className="focus-display-btn focus-display-btn-primary"
             onClick={onPause}
           >
-            Pause
+            일시정지
           </button>
         )}
         <button type="button" className="focus-display-btn" onClick={onReset}>
-          Reset block
+          블록 초기화
         </button>
         <button type="button" className="focus-display-btn focus-display-btn-ghost" onClick={onSkipPhase}>
-          {phase === 'focus' ? 'Skip to break' : 'Skip to focus'}
+          {phase === 'focus' ? '휴식으로 건너뛰기' : '집중으로 건너뛰기'}
         </button>
       </div>
     </div>
@@ -248,13 +248,13 @@ export default function Timer({ defaultSidebarOpen = true }) {
       playBreakRing().catch(() => {})
       setCompletedSessions((count) => count + 1)
       resetFocusBlock('break', activePreset)
-      setStatusMessage('Focus block complete — enjoy your break.')
+      setStatusMessage('집중 블록이 끝났습니다 — 휴식을 즐기세요.')
       setIsRunning(true)
       return
     }
 
     resetFocusBlock('focus', activePreset)
-    setStatusMessage('Break finished — start when you\'re ready.')
+    setStatusMessage('휴식이 끝났습니다 — 준비되면 시작하세요.')
   }, [phase, activePreset, resetFocusBlock])
 
   onPhaseCompleteRef.current = handlePhaseComplete
@@ -331,12 +331,12 @@ export default function Timer({ defaultSidebarOpen = true }) {
     if (phase === 'focus') {
       setCompletedSessions((count) => count + 1)
       resetFocusBlock('break', activePreset)
-      setStatusMessage('Skipped to break.')
+      setStatusMessage('휴식으로 건너뛰었습니다.')
       return
     }
 
     resetFocusBlock('focus', activePreset)
-    setStatusMessage('Skipped to next focus block.')
+    setStatusMessage('다음 집중 블록으로 건너뛰었습니다.')
   }
 
   return (
@@ -359,7 +359,7 @@ export default function Timer({ defaultSidebarOpen = true }) {
             <button
               type="button"
               className={`timer-sidebar-toggle${sidebarOpen ? ' timer-sidebar-toggle-active' : ''}`}
-              aria-label={sidebarOpen ? 'Hide timer sidebar' : 'Show timer sidebar'}
+              aria-label={sidebarOpen ? '타이머 사이드바 숨기기' : '타이머 사이드바 보이기'}
               aria-pressed={sidebarOpen}
               onClick={() => setSidebarOpen((open) => !open)}
             >

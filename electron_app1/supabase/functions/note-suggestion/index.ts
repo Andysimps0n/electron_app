@@ -25,7 +25,7 @@ const ALLOWED_ACTIONS = new Set(['coupang_search'])
 const SYSTEM_PROMPT = `You suggest one useful next action for text the user selected in a note.
 
 Always return ONLY a JSON object with this shape:
-{"suggestion":{"label":"Search speaker in Coupang?","action":"coupang_search","query":"speaker"}}
+{"suggestion":{"label":"쿠팡에서 스피커 검색할까요?","action":"coupang_search","query":"스피커"}}
 
 Or when nothing useful applies:
 {"suggestion":null}
@@ -33,7 +33,7 @@ Or when nothing useful applies:
 Rules:
 - action must be "coupang_search" when the text is about buying, shopping for, or finding a product.
 - query should be a short product search term (no full sentence).
-- label should be a short question the user can click, matching the language of the selected text when possible.
+- label should be a short question the user can click, matching the language of the selected text when possible. Prefer Korean labels like "쿠팡에서 {query} 검색할까요?" when the selection is Korean.
 - If the text is not shopping-related, return {"suggestion":null}.
 - Never invent other action types.
 - Keep label under 60 characters.`
@@ -76,7 +76,7 @@ function normalizeSuggestion(payload) {
   const label =
     typeof candidate.label === 'string' && candidate.label.trim()
       ? candidate.label.trim().slice(0, 80)
-      : `Search ${query} in Coupang?`
+      : `쿠팡에서 ${query} 검색할까요?`
 
   return {
     label,

@@ -22,7 +22,7 @@ import { CalendarIcon, MusicIcon, NoteIcon, TimerIcon } from '../shared/icons'
 export const VIEW_REGISTRY = {
   timer: {
     id: 'timer',
-    title: 'Timer',
+    title: '타이머',
     Icon: TimerIcon,
     render: (context) => (
       <Timer defaultSidebarOpen={context.defaultSidebarOpen} />
@@ -30,7 +30,7 @@ export const VIEW_REGISTRY = {
   },
   calendar: {
     id: 'calendar',
-    title: 'Calendar',
+    title: '캘린더',
     Icon: CalendarIcon,
     render: (context) => (
       <Calendar
@@ -42,7 +42,7 @@ export const VIEW_REGISTRY = {
   },
   notes: {
     id: 'notes',
-    title: 'Notes',
+    title: '노트',
     Icon: NoteIcon,
     render: (context) => (
       <Notes defaultSidebarOpen={context.defaultSidebarOpen} />
@@ -50,7 +50,7 @@ export const VIEW_REGISTRY = {
   },
   music: {
     id: 'music',
-    title: 'Music',
+    title: '음악',
     Icon: MusicIcon,
     render: () => <Music />,
   },

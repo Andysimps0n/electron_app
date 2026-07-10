@@ -29,7 +29,7 @@ export default function CalendarSidebar({
             <button
               type="button"
               className="sidebar-nav-btn"
-              aria-label="Previous month"
+              aria-label="이전 달"
               onClick={onPreviousMonth}
             >
               <ChevronLeftIcon />
@@ -38,7 +38,7 @@ export default function CalendarSidebar({
             <button
               type="button"
               className="sidebar-nav-btn"
-              aria-label="Next month"
+              aria-label="다음 달"
               onClick={onNextMonth}
             >
               <ChevronRightIcon />
@@ -47,7 +47,7 @@ export default function CalendarSidebar({
           {/* <button
             type="button"
             className="sidebar-panel-toggle"
-            aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+            aria-label={sidebarOpen ? '사이드바 숨기기' : '사이드바 보이기'}
             aria-pressed={sidebarOpen}
             onClick={onToggleSidebar}
           >
@@ -93,8 +93,8 @@ export default function CalendarSidebar({
       </div>
 
       <TodoList
-        title="TODO LIST"
-        placeholder="Add a task...   (Enter to add)"
+        title="할 일 목록"
+        placeholder="할 일 추가...   (Enter로 추가)"
       />
     </aside>
   )

@@ -1,7 +1,7 @@
 export function formatDigitalClock(date) {
   const hours = date.getHours()
   const minutes = date.getMinutes()
-  const period = hours >= 12 ? 'PM' : 'AM'
+  const period = hours >= 12 ? '오후' : '오전'
   const displayHour = hours % 12 === 0 ? 12 : hours % 12
 
   return {
@@ -11,7 +11,7 @@ export function formatDigitalClock(date) {
   }
 }
 
-export function formatClockDate(date, locale = 'en-US') {
+export function formatClockDate(date, locale = 'ko-KR') {
   return date.toLocaleDateString(locale, {
     weekday: 'short',
     month: 'short',

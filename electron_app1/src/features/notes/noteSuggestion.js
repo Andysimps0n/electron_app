@@ -29,7 +29,7 @@ export function localSuggest(selectedText) {
       return null
     }
     return {
-      label: `Search ${query} in Coupang?`,
+      label: `쿠팡에서 ${query} 검색할까요?`,
       action: 'coupang_search',
       query,
     }
@@ -69,7 +69,7 @@ function normalizeSuggestion(payload) {
   const label =
     typeof payload.label === 'string' && payload.label.trim()
       ? payload.label.trim()
-      : `Search ${query} in Coupang?`
+      : `쿠팡에서 ${query} 검색할까요?`
 
   return { label, action: 'coupang_search', query }
 }

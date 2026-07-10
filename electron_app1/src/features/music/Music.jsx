@@ -33,7 +33,7 @@ function TrackCard({ track, state, onTogglePlay, onVolumeChange }) {
         <button
           type="button"
           className="music-play-btn"
-          aria-label={`${state.isPlaying ? 'Pause' : 'Play'} ${track.name}`}
+          aria-label={`${state.isPlaying ? '일시정지' : '재생'} ${track.name}`}
           aria-pressed={state.isPlaying}
           onClick={() => onTogglePlay(track.id)}
         >
@@ -52,7 +52,7 @@ function TrackCard({ track, state, onTogglePlay, onVolumeChange }) {
           max="1"
           step="0.01"
           value={state.volume}
-          aria-label={`${track.name} volume`}
+          aria-label={`${track.name} 볼륨`}
           style={{ '--fill': `${volumePercent}%` }}
           onChange={(event) => onVolumeChange(track.id, event.target.value)}
         />
@@ -89,8 +89,7 @@ export default function Music() {
       <div className="music-body">
         <header className="music-heading">
           <DigitalClock />
-          <h1 className="music-title">Soundscapes</h1>
-          <p className="music-subtitle">Mix your perfect environment</p>
+          <h1 className="music-title">음악 재생</h1>
         </header>
 
         <div className="music-grid">
@@ -108,10 +107,8 @@ export default function Music() {
 
       <footer className="music-mixbar">
         <div className="music-mix-summary">
-          <span className="music-mix-label">Active mix</span>
           <span className="music-mix-count">
-            {activeTracks.length} sound{activeTracks.length === 1 ? '' : 's'}{' '}
-            layered
+            {activeTracks.length}개 사운드 레이어
           </span>
         </div>
 
@@ -136,7 +133,7 @@ export default function Music() {
             disabled={activeTracks.length === 0}
           >
             <StopIcon width={14} height={14} />
-            Stop All
+            모두 정지
           </button>
           <button
             type="button"
@@ -144,10 +141,10 @@ export default function Music() {
             onClick={handleSavePreset}
           >
             {savedStatus === null
-              ? 'Save Preset'
+              ? '프리셋 저장'
               : savedStatus === 'synced'
-                ? 'Saved & synced'
-                : 'Saved locally'}
+                ? '저장 및 동기화됨'
+                : '로컬에 저장됨'}
           </button>
         </div>
       </footer>

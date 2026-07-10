@@ -16,7 +16,7 @@ export default function TimerSidebar({
     <aside className="sidebar timer-sidebar">
       <div className="timer-sidebar-modes">
         <section className="timer-sidebar-section">
-          <h2 className="sidebar-title timer-sidebar-section-title">Focus</h2>
+          <h2 className="sidebar-title timer-sidebar-section-title">집중</h2>
           <ul className="timer-sidebar-list">
             {POMODORO_PRESETS.map((preset) => (
               <li key={preset.id}>
@@ -30,7 +30,7 @@ export default function TimerSidebar({
                   onClick={() => onSelectFocus(preset)}
                 >
                   <span className="timer-sidebar-item-label">{preset.label}</span>
-                  <span className="timer-sidebar-item-meta">focus / break</span>
+                  <span className="timer-sidebar-item-meta">집중 / 휴식</span>
                 </button>
               </li>
             ))}
@@ -41,8 +41,8 @@ export default function TimerSidebar({
                 }`}
                 onClick={onSelectClock}
               >
-                <span className="timer-sidebar-item-label">Desk Clock</span>
-                <span className="timer-sidebar-item-meta">Digital clock</span>
+                <span className="timer-sidebar-item-label">책상 시계</span>
+                <span className="timer-sidebar-item-meta">디지털 시계</span>
               </button>
           </ul>
         </section>
@@ -50,8 +50,8 @@ export default function TimerSidebar({
       </div>
 
       <TodoList
-        title="Tasks"
-        placeholder="Add a task...   (Enter to add)"
+        title="할 일"
+        placeholder="할 일 추가...   (Enter로 추가)"
       />
     </aside>
   )

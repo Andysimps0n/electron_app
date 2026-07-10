@@ -1,17 +1,17 @@
-const DAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토']
 const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  '1월',
+  '2월',
+  '3월',
+  '4월',
+  '5월',
+  '6월',
+  '7월',
+  '8월',
+  '9월',
+  '10월',
+  '11월',
+  '12월',
 ]
 
 export function isSameDay(a, b) {
@@ -63,17 +63,17 @@ export function getWeekDates(date) {
 }
 
 export function formatMonthYear(date) {
-  return `${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`
+  return `${date.getFullYear()}년 ${MONTH_NAMES[date.getMonth()]}`
 }
 
 export function formatMonthYearShort(date) {
-  return `${MONTH_NAMES[date.getMonth()]}, ${date.getFullYear()}`
+  return `${date.getFullYear()}년 ${MONTH_NAMES[date.getMonth()]}`
 }
 
 export function formatHour(hour) {
-  const period = hour >= 12 ? 'PM' : 'AM'
+  const period = hour >= 12 ? '오후' : '오전'
   const display = hour % 12 === 0 ? 12 : hour % 12
-  return `${String(display).padStart(2, '0')} ${period}`
+  return `${period} ${String(display).padStart(2, '0')}시`
 }
 
 export function getWeekNumber(date) {

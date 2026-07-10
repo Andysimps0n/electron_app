@@ -91,6 +91,23 @@ export function useCalendarEvents() {
     return nextEvent
   }
 
+  function createEvents(eventsToCreate) {
+    if (!eventsToCreate.length) {
+      return []
+    }
+
+    const timestamp = getTimestamp()
+    const nextEvents = eventsToCreate.map((event) => ({
+      ...event,
+      createdAt: event.createdAt ?? timestamp,
+      updatedAt: timestamp,
+    }))
+
+    commitEvents([...eventsRef.current, ...nextEvents])
+    nextEvents.forEach(syncEvent)
+    return nextEvents
+  }
+
   function updateEvent(eventId, updates) {
     let updatedEvent = null
     const nextEvents = eventsRef.current.map((event) => {
@@ -119,6 +136,7 @@ export function useCalendarEvents() {
   return {
     events,
     createEvent,
+    createEvents,
     updateEvent,
     deleteEvent,
   }

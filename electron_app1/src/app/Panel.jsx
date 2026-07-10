@@ -29,18 +29,18 @@ export default function Panel({
     <section
       className={`split-panel${isActive ? ' split-panel-active' : ''}`}
       onMouseDown={onFocus}
-      aria-label={view ? view.title : 'Empty panel'}
+      aria-label={view ? view.title : '빈 패널'}
     >
       {showChrome && (
         <header className="split-panel-header">
           <span className="split-panel-title">
             {view && <view.Icon width={14} height={14} />}
-            <span>{view ? view.title : 'Empty'}</span>
+            <span>{view ? view.title : '비어 있음'}</span>
           </span>
           <button
             type="button"
             className="split-panel-close"
-            aria-label="Close panel"
+            aria-label="패널 닫기"
             onClick={(event) => {
               event.stopPropagation()
               onClose()

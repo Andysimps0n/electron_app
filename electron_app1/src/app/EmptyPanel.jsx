@@ -9,7 +9,7 @@ import { VIEW_LIST } from '../utils/viewRegistry'
 export default function EmptyPanel({ onPickView }) {
   return (
     <div className="empty-panel">
-      <p className="empty-panel-title">Open a view</p>
+      <p className="empty-panel-title">화면 열기</p>
       <div className="empty-panel-actions">
         {VIEW_LIST.map((view) => (
           <button

@@ -7,7 +7,6 @@ import {
   fetchNoteSuggestion,
 } from './noteSuggestion'
 
-const DEBOUNCE_MS = 400
 const CHIP_GAP = 8
 const CHIP_ESTIMATED_HEIGHT = 36
 
@@ -71,16 +70,11 @@ export default function NoteSelectionSuggestion({ editorRef, noteId }) {
   const [suggestion, setSuggestion] = useState(null)
   const [errorMessage, setErrorMessage] = useState('')
 
-  const debounceRef = useRef(null)
   const abortRef = useRef(null)
   const cacheRef = useRef(new Map())
   const chipRef = useRef(null)
 
   function clearSuggestion() {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current)
-      debounceRef.current = null
-    }
     if (abortRef.current) {
       abortRef.current.abort()
       abortRef.current = null
@@ -91,10 +85,7 @@ export default function NoteSelectionSuggestion({ editorRef, noteId }) {
     setErrorMessage('')
   }
 
-  function scheduleFetch(selected) {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current)
-    }
+  async function runFetch(selected) {
     if (abortRef.current) {
       abortRef.current.abort()
       abortRef.current = null
@@ -119,45 +110,43 @@ export default function NoteSelectionSuggestion({ editorRef, noteId }) {
       return
     }
 
-    debounceRef.current = setTimeout(async () => {
-      const controller = new AbortController()
-      abortRef.current = controller
+    const controller = new AbortController()
+    abortRef.current = controller
 
-      try {
-        const result = await fetchNoteSuggestion(selected.text, {
-          signal: controller.signal,
-        })
-        if (controller.signal.aborted) {
-          return
-        }
-
-        cacheRef.current.set(selected.text, result)
-
-        if (!result) {
-          clearSuggestion()
-          return
-        }
-
-        setSuggestion(result)
-        setStatus('ready')
-      } catch (error) {
-        if (error?.name === 'AbortError') {
-          return
-        }
-        setStatus('error')
-        setErrorMessage("Couldn't suggest")
-        setTimeout(() => {
-          setAnchor((current) => {
-            if (current?.text === selected.text) {
-              return null
-            }
-            return current
-          })
-          setStatus('idle')
-          setErrorMessage('')
-        }, 1200)
+    try {
+      const result = await fetchNoteSuggestion(selected.text, {
+        signal: controller.signal,
+      })
+      if (controller.signal.aborted) {
+        return
       }
-    }, DEBOUNCE_MS)
+
+      cacheRef.current.set(selected.text, result)
+
+      if (!result) {
+        clearSuggestion()
+        return
+      }
+
+      setSuggestion(result)
+      setStatus('ready')
+    } catch (error) {
+      if (error?.name === 'AbortError') {
+        return
+      }
+      setStatus('error')
+      setErrorMessage('제안할 수 없습니다')
+      setTimeout(() => {
+        setAnchor((current) => {
+          if (current?.text === selected.text) {
+            return null
+          }
+          return current
+        })
+        setStatus('idle')
+        setErrorMessage('')
+      }, 1200)
+    }
   }
 
   useEffect(() => {
@@ -179,7 +168,7 @@ export default function NoteSelectionSuggestion({ editorRef, noteId }) {
           clearSuggestion()
           return
         }
-        scheduleFetch(selected)
+        runFetch(selected)
       })
     }
 
@@ -194,7 +183,7 @@ export default function NoteSelectionSuggestion({ editorRef, noteId }) {
           clearSuggestion()
           return
         }
-        scheduleFetch(selected)
+        runFetch(selected)
       })
     }
 
@@ -247,9 +236,6 @@ export default function NoteSelectionSuggestion({ editorRef, noteId }) {
       document.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('scroll', handleScrollOrResize, true)
       window.removeEventListener('resize', handleScrollOrResize)
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current)
-      }
       if (abortRef.current) {
         abortRef.current.abort()
       }
@@ -261,6 +247,7 @@ export default function NoteSelectionSuggestion({ editorRef, noteId }) {
       return
     }
     await openExternalUrl(buildCoupangSearchUrl(suggestion.query))
+    clearSuggestion()
   }
 
   if (!anchor || status === 'idle') {
@@ -279,7 +266,7 @@ export default function NoteSelectionSuggestion({ editorRef, noteId }) {
     >
       {status === 'loading' && (
         <span className="note-selection-suggestion-loading" aria-live="polite">
-          Thinking…
+          생각 중…
         </span>
       )}
 

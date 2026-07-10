@@ -17,6 +17,7 @@ import {
   formatSelectionRange,
   getDateKey,
   getEventColorStyle,
+  getRepeatOccurrenceDates,
   getScrollTopForCurrentTime,
   HORIZONTAL_SCROLL_DOMINANCE,
   HORIZONTAL_SCROLL_LOCK_MS,
@@ -38,6 +39,7 @@ export default function WeekView({
   const weekViewRef = useRef(null)
   const eventEditorRef = useRef(null)
   const interactionRef = useRef(null)
+  const clipboardEventRef = useRef(null)
   const selectedDateRef = useRef(selectedDate)
   const weekScrollOffsetRef = useRef(0)
   const reverseScrollRef = useRef(reverseScroll)
@@ -51,11 +53,15 @@ export default function WeekView({
   const [draftSelection, setDraftSelection] = useState(null)
   const [editorSelection, setEditorSelection] = useState(null)
   const [editingEventId, setEditingEventId] = useState(null)
+  const [selectedEventId, setSelectedEventId] = useState(null)
   const [eventTitle, setEventTitle] = useState('')
   const [eventDetails, setEventDetails] = useState('')
   const [eventColor, setEventColor] = useState(null)
+  const [eventRepeat, setEventRepeat] = useState('none')
+  const [eventRepeatInterval, setEventRepeatInterval] = useState(1)
+  const [eventRepeatUnit, setEventRepeatUnit] = useState('day')
   const [editorFlipY, setEditorFlipY] = useState(false)
-  const { events, createEvent, updateEvent, deleteEvent } = useCalendarEvents()
+  const { events, createEvents, updateEvent, deleteEvent } = useCalendarEvents()
   const [now, setNow] = useState(() => new Date())
   const [weekScrollOffset, setWeekScrollOffset] = useState(0)
   const [verticalScrollLocked, setVerticalScrollLocked] = useState(false)
@@ -205,18 +211,34 @@ export default function WeekView({
     setEventTitle('')
     setEventDetails('')
     setEventColor(null)
+    setEventRepeat('none')
+    setEventRepeatInterval(1)
+    setEventRepeatUnit('day')
+  }
+
+  function clearEventSelection() {
+    setSelectedEventId(null)
+  }
+
+  function selectEvent(calendarEvent) {
+    setSelectedEventId(calendarEvent.id)
+    dismissEditor()
   }
 
   function handleDeleteEvent() {
-    if (!editingEventId) {
+    // Prefer the event being edited; otherwise delete the clicked/selected one.
+    const eventId = editingEventId ?? selectedEventId
+    if (!eventId) {
       return
     }
 
-    deleteEvent(editingEventId)
+    deleteEvent(eventId)
+    clearEventSelection()
     dismissEditor()
   }
 
   function openEventEditor(calendarEvent) {
+    setSelectedEventId(calendarEvent.id)
     setEditingEventId(calendarEvent.id)
     setEditorSelection({
       dayIndex: calendarEvent.dayIndex,
@@ -226,7 +248,64 @@ export default function WeekView({
     setEventTitle(calendarEvent.title)
     setEventDetails(calendarEvent.details ?? '')
     setEventColor(calendarEvent.color ?? null)
+    setEventRepeat('none')
+    setEventRepeatInterval(1)
+    setEventRepeatUnit('day')
     setDraftSelection(null)
+  }
+
+  function copySelectedEvent() {
+    if (editingEventId && editorSelection) {
+      clipboardEventRef.current = {
+        title: eventTitle.trim() || '새 일정',
+        details: eventDetails,
+        color: eventColor,
+        startMinute: editorSelection.startMinute,
+        endMinute: editorSelection.endMinute,
+      }
+      return
+    }
+
+    const eventId = selectedEventId
+    if (!eventId) {
+      return
+    }
+
+    const calendarEvent = events.find((event) => event.id === eventId)
+    if (!calendarEvent) {
+      return
+    }
+
+    clipboardEventRef.current = {
+      title: calendarEvent.title,
+      details: calendarEvent.details ?? '',
+      color: calendarEvent.color ?? null,
+      startMinute: calendarEvent.startMinute,
+      endMinute: calendarEvent.endMinute,
+    }
+  }
+
+  function pasteClipboardEvent() {
+    const snapshot = clipboardEventRef.current
+    if (!snapshot) {
+      return
+    }
+
+    const newId = crypto.randomUUID()
+    createEvents([
+      {
+        id: newId,
+        dateKey: getDateKey(selectedDate),
+        dayIndex: selectedDate.getDay(),
+        startMinute: snapshot.startMinute,
+        endMinute: snapshot.endMinute,
+        title: snapshot.title,
+        details: snapshot.details,
+        color: snapshot.color,
+      },
+    ])
+    dismissEditor()
+    setSelectedEventId(newId)
   }
 
   function navigateWeek(dayDelta) {
@@ -349,6 +428,7 @@ export default function WeekView({
       }
 
       dismissEditor()
+      clearEventSelection()
       interactionRef.current = {
         mode: 'dismiss',
         pointerId: event.pointerId,
@@ -364,29 +444,7 @@ export default function WeekView({
     function handleKeyDown(event) {
       if (event.key === 'Escape') {
         dismissEditor()
-        return
       }
-
-      if (event.key !== 'Delete' && event.key !== 'Backspace') {
-        return
-      }
-
-      if (!editingEventId) {
-        return
-      }
-
-      const target = event.target
-      if (
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement
-      ) {
-        if (target.value !== '') {
-          return
-        }
-      }
-
-      event.preventDefault()
-      handleDeleteEvent()
     }
 
     document.addEventListener('pointerdown', handlePointerDownCapture, true)
@@ -397,7 +455,82 @@ export default function WeekView({
       document.removeEventListener('pointerup', handlePointerUpCapture, true)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [editorSelection, editingEventId])
+  }, [editorSelection])
+
+  // Delete/Backspace removes the selected or editing event.
+  // Runs even when the editor is closed (click-to-select only).
+  useEffect(() => {
+    if (!selectedEventId && !editingEventId) {
+      return
+    }
+
+    function handleDeleteKeyDown(event) {
+      if (event.key !== 'Delete' && event.key !== 'Backspace') {
+        return
+      }
+
+      const target = event.target
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement
+      ) {
+        // While typing in the editor, only delete the event if the field is empty.
+        if (target.value !== '') {
+          return
+        }
+      }
+
+      event.preventDefault()
+      handleDeleteEvent()
+    }
+
+    document.addEventListener('keydown', handleDeleteKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleDeleteKeyDown)
+    }
+  }, [selectedEventId, editingEventId])
+
+  useEffect(() => {
+    function handleCopyPasteKeyDown(event) {
+      const mod = event.metaKey || event.ctrlKey
+      if (!mod) {
+        return
+      }
+
+      const inInput =
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+
+      if (inInput) {
+        return
+      }
+
+      if (event.key === 'c' || event.key === 'C') {
+        event.preventDefault()
+        copySelectedEvent()
+        return
+      }
+
+      if (event.key === 'v' || event.key === 'V') {
+        event.preventDefault()
+        pasteClipboardEvent()
+      }
+    }
+
+    document.addEventListener('keydown', handleCopyPasteKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleCopyPasteKeyDown)
+    }
+  }, [
+    editingEventId,
+    editorSelection,
+    selectedEventId,
+    eventTitle,
+    eventDetails,
+    eventColor,
+    events,
+    selectedDate,
+  ])
 
   function getPointerSlot(event, { currentWeekOnly = false } = {}) {
     const viewport = daysBodyViewportRef.current
@@ -573,6 +706,8 @@ export default function WeekView({
       return
     }
 
+    clearEventSelection()
+
     const startSlot = resolvePointerSlot(event)
     if (!startSlot) {
       return
@@ -746,7 +881,15 @@ export default function WeekView({
     }
 
     if (interaction.mode === 'pending-event-drag') {
-      openEventEditor(interaction.calendarEvent)
+      const calendarEvent = interaction.calendarEvent
+      if (
+        selectedEventId === calendarEvent.id &&
+        editingEventId !== calendarEvent.id
+      ) {
+        openEventEditor(calendarEvent)
+      } else {
+        selectEvent(calendarEvent)
+      }
       interactionRef.current = null
       return
     }
@@ -893,6 +1036,9 @@ export default function WeekView({
     setEventTitle('')
     setEventDetails('')
     setEventColor(null)
+    setEventRepeat('none')
+    setEventRepeatInterval(1)
+    setEventRepeatUnit('day')
   }
 
   function handleSaveEvent() {
@@ -900,7 +1046,7 @@ export default function WeekView({
       return
     }
 
-    const title = eventTitle.trim() || 'New event'
+    const title = eventTitle.trim() || '새 일정'
     const details = eventDetails.trim()
 
     if (editingEventId) {
@@ -914,14 +1060,25 @@ export default function WeekView({
         dateKey: getDateKey(weekDates[editorSelection.dayIndex]),
       })
     } else {
-      createEvent({
-        id: crypto.randomUUID(),
-        dateKey: getDateKey(weekDates[editorSelection.dayIndex]),
-        title,
-        details,
-        color: eventColor,
-        ...editorSelection,
+      const startDate = weekDates[editorSelection.dayIndex]
+      const occurrenceDates = getRepeatOccurrenceDates(startDate, {
+        repeat: eventRepeat,
+        interval: eventRepeatInterval,
+        unit: eventRepeatUnit,
       })
+
+      createEvents(
+        occurrenceDates.map((date) => ({
+          id: crypto.randomUUID(),
+          dateKey: getDateKey(date),
+          title,
+          details,
+          color: eventColor,
+          dayIndex: date.getDay(),
+          startMinute: editorSelection.startMinute,
+          endMinute: editorSelection.endMinute,
+        })),
+      )
     }
 
     dismissEditor()
@@ -984,11 +1141,24 @@ export default function WeekView({
                   key={event.id}
                   className={`week-view-event${
                     editingEventId === event.id ? ' week-view-event-editing' : ''
+                  }${
+                    selectedEventId === event.id && editingEventId !== event.id
+                      ? ' week-view-event-selected'
+                      : ''
                   }`}
                   style={getEventStyle(event)}
                   onPointerDown={(pointerEvent) =>
                     handleEventPointerDown(pointerEvent, event)
                   }
+                  onDoubleClick={(pointerEvent) => {
+                    pointerEvent.stopPropagation()
+                    openEventEditor(event)
+                  }}
+                  onContextMenu={(pointerEvent) => {
+                    pointerEvent.preventDefault()
+                    pointerEvent.stopPropagation()
+                    openEventEditor(event)
+                  }}
                 >
                   <strong>{event.title}</strong>
                   <span>
@@ -1021,7 +1191,7 @@ export default function WeekView({
               handleSelectionPointerDown(event, visibleSelection)
             }
           >
-            <strong>{eventTitle.trim() || 'New event'}</strong>
+            <strong>{eventTitle.trim() || '새 일정'}</strong>
             <span>
               {eventDetails.trim() || formatSelectionRange(visibleSelection)}
             </span>
@@ -1041,36 +1211,77 @@ export default function WeekView({
           >
             <div className="event-editor-header">
               <div>
-                <h2>{editingEventId ? 'Edit event' : 'Create event'}</h2>
+                <h2>{editingEventId ? '일정 수정' : '일정 만들기'}</h2>
                 <p>{formatSelectionRange(editorSelection)}</p>
               </div>
             </div>
             <label className="event-editor-field">
-              <span>Name</span>
+              <span>이름</span>
               <input
                 autoFocus={!editingEventId}
                 value={eventTitle}
-                placeholder="New event"
+                placeholder="새 일정"
                 onChange={(event) => setEventTitle(event.target.value)}
               />
             </label>
             <div className="event-editor-field">
-              <span>Time</span>
+              <span>시간</span>
               <strong>{formatSelectionRange(editorSelection)}</strong>
             </div>
             <label className="event-editor-field">
-              <span>Note</span>
+              <span>메모</span>
               <input
                 value={eventDetails}
-                placeholder="Memo, URL, or details"
+                placeholder="메모, URL 또는 세부 정보"
                 onChange={(event) => setEventDetails(event.target.value)}
               />
             </label>
+            <label className="event-editor-field">
+              <span>반복</span>
+              <select
+                value={eventRepeat}
+                onChange={(event) => setEventRepeat(event.target.value)}
+              >
+                <option value="none">안 함</option>
+                <option value="daily">매일</option>
+                <option value="weekly">매주</option>
+                <option value="custom">사용자지정</option>
+              </select>
+            </label>
+            {eventRepeat === 'custom' && (
+              <label className="event-editor-field event-editor-repeat-custom">
+                <span>간격</span>
+                <div className="event-editor-repeat-interval">
+                  <span className="event-editor-repeat-prefix">매</span>
+                  <input
+                    type="number"
+                    min={1}
+                    value={eventRepeatInterval}
+                    onChange={(event) => {
+                      const nextValue = Number(event.target.value)
+                      setEventRepeatInterval(
+                        Number.isFinite(nextValue) && nextValue >= 1
+                          ? nextValue
+                          : 1,
+                      )
+                    }}
+                  />
+                  <select
+                    value={eventRepeatUnit}
+                    onChange={(event) => setEventRepeatUnit(event.target.value)}
+                  >
+                    <option value="day">일마다</option>
+                    <option value="week">주마다</option>
+                  </select>
+                </div>
+              </label>
+            )}
+
             <div className="event-editor-actions">
               <div
                 className="event-editor-color-swatches"
                 role="group"
-                aria-label="Event color"
+                aria-label="일정 색상"
               >
                 {EVENT_COLOR_KEYS.map((colorKey) => (
                   <button
@@ -1094,10 +1305,10 @@ export default function WeekView({
                   className="event-editor-ghost-btn"
                   onClick={dismissEditor}
                 >
-                  Cancel
+                  취소
                 </button>
                 <button type="submit" className="event-editor-save-btn">
-                  Save
+                  저장
                 </button>
               </div>
             </div>

@@ -12,11 +12,7 @@ export function createTodo(text, timeMinute = null) {
 }
 
 export function getDefaultTodos() {
-  return [
-    createTodo('Review quarterly report', 9 * 60),
-    createTodo('Sync with design team', 11 * 60 + 30),
-    createTodo('Prepare sprint presentation', 14 * 60),
-  ]
+  return []
 }
 
 export function loadTodos() {
@@ -49,7 +45,7 @@ export function saveTodos(todos) {
 export function formatTodoTime(totalMinutes) {
   const hour = Math.floor(totalMinutes / 60)
   const minute = totalMinutes % 60
-  const period = hour >= 12 ? 'PM' : 'AM'
+  const period = hour >= 12 ? '오후' : '오전'
   const displayHour = hour % 12 === 0 ? 12 : hour % 12
-  return `${displayHour}:${String(minute).padStart(2, '0')} ${period}`
+  return `${period} ${displayHour}:${String(minute).padStart(2, '0')}`
 }

@@ -27,7 +27,7 @@ export function waitForOAuthCallback({ timeoutMs = 5 * 60 * 1000 } = {}) {
       response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
       response.end(
         '<html><body style="font-family: sans-serif; text-align: center; padding-top: 80px;">' +
-          '<h2>Sign-in complete</h2><p>You can close this tab and return to the app.</p>' +
+          '<h2>로그인 완료</h2><p>이 탭을 닫고 앱으로 돌아가세요.</p>' +
           '</body></html>',
       )
 
@@ -35,13 +35,13 @@ export function waitForOAuthCallback({ timeoutMs = 5 * 60 * 1000 } = {}) {
         finish(() => resolve(code))
       } else {
         finish(() =>
-          reject(new Error(errorDescription ?? 'No auth code in OAuth callback')),
+          reject(new Error(errorDescription ?? 'OAuth 콜백에 인증 코드가 없습니다')),
         )
       }
     })
 
     const timeout = setTimeout(() => {
-      finish(() => reject(new Error('Timed out waiting for Google sign-in')))
+      finish(() => reject(new Error('Google 로그인 대기 시간이 초과되었습니다')))
     }, timeoutMs)
 
     function finish(settle) {

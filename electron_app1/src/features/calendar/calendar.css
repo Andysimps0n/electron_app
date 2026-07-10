@@ -254,9 +254,9 @@
   border-radius: calc(var(--radius-lg) - 2px);
 }
 
-.view-toggle-btn:hover:not(.view-toggle-btn-active) {
+/* .view-toggle-btn:hover:not(.view-toggle-btn-active) {
   color: var(--black-500);
-}
+} */
 
 .view-toggle-btn-active,
 .view-toggle-btn-active:hover {
@@ -575,16 +575,20 @@
 
 
 .week-view-selection {
-  background: var(--accent-green-muted);
+  background: var(--event-bg, var(--accent-green-muted));
   color: var(--black-500);
   cursor: grab;
-  border-color: var(--accent-green);
+  border-color: var(--event-border, var(--accent-green));
 }
 
 .week-view-selection-editing,
 .week-view-event-editing {
   background: var(--event-bg-editing, var(--accent-green-light));
   /* box-shadow: 0 0 0 2px var(--bg-main), 0 0 0 4px var(--black-500); */
+}
+
+.week-view-event-selected {
+  background: var(--event-bg-editing, var(--accent-green-light));
 }
 
 .week-view-selection strong,
@@ -739,6 +743,24 @@
   -webkit-user-select: text;
 }
 
+.event-editor-field select {
+  min-width: 0;
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--black-500);
+  font: var(--body-sm-bold);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23999' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0 center;
+  padding-right: 16px;
+}
+
+.event-editor-field select:focus,
 .event-editor-field input:focus {
   outline: none;
   caret-color: var(--accent-green);
@@ -747,6 +769,29 @@
 .event-editor-field input::placeholder {
   color: var(--black-300);
   opacity: 1;
+}
+
+.event-editor-repeat-interval {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.event-editor-repeat-prefix {
+  color: var(--black-500);
+  font: var(--body-sm-bold);
+  flex-shrink: 0;
+}
+
+.event-editor-repeat-interval input[type='number'] {
+  width: 48px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.event-editor-repeat-interval select {
+  flex: 1;
 }
 
 .event-editor-actions {

@@ -10,7 +10,7 @@ export default function MusicMuteButton() {
     <button
       type="button"
       className={`music-mute-btn${isMuted ? ' music-mute-btn-active' : ''}`}
-      aria-label={isMuted ? 'Unmute music' : 'Mute music'}
+      aria-label={isMuted ? '음악 음소거 해제' : '음악 음소거'}
       aria-pressed={isMuted}
       onClick={toggleMute}
     >

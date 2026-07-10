@@ -7,7 +7,7 @@ function getUserAvatarUrl(user) {
 }
 
 function getUserInitial(user) {
-  const name = user?.user_metadata?.full_name ?? user?.email ?? 'User'
+  const name = user?.user_metadata?.full_name ?? user?.email ?? '사용자'
   return name.trim().charAt(0).toUpperCase() || 'U'
 }
 
@@ -28,7 +28,7 @@ function LoginCard({ isBusy, error, onClose, onSignIn }) {
       <button
         type="button"
         className="login-card-backdrop"
-        aria-label="Close login dialog"
+        aria-label="로그인 창 닫기"
         onClick={onClose}
       />
 
@@ -41,7 +41,7 @@ function LoginCard({ isBusy, error, onClose, onSignIn }) {
         <button
           type="button"
           className="login-card-close"
-          aria-label="Close login dialog"
+          aria-label="로그인 창 닫기"
           onClick={onClose}
         >
           ×
@@ -51,10 +51,10 @@ function LoginCard({ isBusy, error, onClose, onSignIn }) {
           G
         </div>
         <h2 id="login-card-title" className="login-card-title">
-          Sign in to sync
+          동기화하려면 로그인하세요
         </h2>
         <p className="login-card-copy">
-          Continue with Google to keep your workspace connected across devices.
+          Google로 계속하여 여러 기기에서 작업 공간을 연결하세요.
         </p>
 
         <button
@@ -63,7 +63,7 @@ function LoginCard({ isBusy, error, onClose, onSignIn }) {
           disabled={isBusy}
           onClick={onSignIn}
         >
-          {isBusy ? 'Signing in...' : 'Continue with Google'}
+          {isBusy ? '로그인 중...' : 'Google로 계속하기'}
         </button>
 
         {error && (
@@ -96,7 +96,7 @@ export default function AuthButton() {
     try {
       await signInWithGoogle()
     } catch (error) {
-      setAuthError(error.message ?? 'Could not sign in. Please try again.')
+      setAuthError(error.message ?? '로그인하지 못했습니다. 다시 시도해 주세요.')
     } finally {
       setIsBusy(false)
     }
@@ -108,7 +108,7 @@ export default function AuthButton() {
     try {
       await signOut()
     } catch (error) {
-      setAuthError(error.message ?? 'Could not sign out. Please try again.')
+      setAuthError(error.message ?? '로그아웃하지 못했습니다. 다시 시도해 주세요.')
       setIsLoginCardOpen(true)
     } finally {
       setIsBusy(false)
@@ -121,8 +121,8 @@ export default function AuthButton() {
         <button
           type="button"
           className="auth-button auth-button-avatar"
-          aria-label={`Sign out ${user.email ?? 'current user'}`}
-          title={user.email ?? 'Signed in'}
+          aria-label={`로그아웃 ${user.email ?? '현재 사용자'}`}
+          title={user.email ?? '로그인됨'}
           disabled={isBusy}
           onClick={handleSignOut}
         >
@@ -156,7 +156,7 @@ export default function AuthButton() {
           setIsLoginCardOpen(true)
         }}
       >
-        Login
+        로그인
       </button>
 
       {isLoginCardOpen && (

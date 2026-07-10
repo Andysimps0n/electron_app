@@ -12,7 +12,7 @@ function AccountSection() {
     try {
       await action()
     } catch (error) {
-      setAuthError(error.message ?? 'Something went wrong. Please try again.')
+      setAuthError(error.message ?? '문제가 발생했습니다. 다시 시도해 주세요.')
     } finally {
       setIsBusy(false)
     }
@@ -20,13 +20,13 @@ function AccountSection() {
 
   return (
     <section className="settings-panel-section">
-      <h3 className="settings-panel-section-title">Account</h3>
+      <h3 className="settings-panel-section-title">계정</h3>
       <div className="settings-panel-option settings-panel-account">
         {user ? (
           <>
             <span className="settings-panel-option-label">{user.email}</span>
             <span className="settings-panel-option-hint">
-              Signed in — presets sync across devices
+              로그인됨 — 프리셋이 기기 간에 동기화됩니다
             </span>
             <button
               type="button"
@@ -34,14 +34,14 @@ function AccountSection() {
               disabled={isBusy}
               onClick={() => handleAuthAction(signOut)}
             >
-              Sign out
+              로그아웃
             </button>
           </>
         ) : (
           <>
-            <span className="settings-panel-option-label">Not signed in</span>
+            <span className="settings-panel-option-label">로그인되지 않음</span>
             <span className="settings-panel-option-hint">
-              Sign in to sync your music presets across devices
+              로그인하여 음악 프리셋을 여러 기기에서 동기화하세요
             </span>
             <button
               type="button"
@@ -49,7 +49,7 @@ function AccountSection() {
               disabled={isBusy || isLoading}
               onClick={() => handleAuthAction(signInWithGoogle)}
             >
-              Sign in with Google
+              Google로 로그인
             </button>
           </>
         )}
@@ -65,20 +65,20 @@ function AccountSection() {
 
 export default function SettingsPanel({ reverseScroll, onReverseScrollChange, onClose }) {
   return (
-    <div className="settings-panel" role="dialog" aria-modal="true" aria-label="Settings">
+    <div className="settings-panel" role="dialog" aria-modal="true" aria-label="설정">
       <button
         type="button"
         className="settings-panel-backdrop"
-        aria-label="Close settings"
+        aria-label="설정 닫기"
         onClick={onClose}
       />
       <div className="settings-panel-sheet">
         <header className="settings-panel-header">
-          <h2 className="settings-panel-title">Settings</h2>
+          <h2 className="settings-panel-title">설정</h2>
           <button
             type="button"
             className="settings-panel-close"
-            aria-label="Close settings"
+            aria-label="설정 닫기"
             onClick={onClose}
           >
             ×
@@ -88,15 +88,15 @@ export default function SettingsPanel({ reverseScroll, onReverseScrollChange, on
         <AccountSection />
 
         <section className="settings-panel-section">
-          <h3 className="settings-panel-section-title">Calendar</h3>
+          <h3 className="settings-panel-section-title">캘린더</h3>
           <label className="settings-panel-option">
             <span className="settings-panel-option-label">
-              Reverse horizontal scroll
+              가로 스크롤 방향 반전
             </span>
             <span className="settings-panel-option-hint">
               {reverseScroll
-                ? 'Swipe left to go to the previous week'
-                : 'Swipe left to go to the next week'}
+                ? '왼쪽으로 스와이프하면 이전 주로 이동합니다'
+                : '왼쪽으로 스와이프하면 다음 주로 이동합니다'}
             </span>
             <input
               type="checkbox"

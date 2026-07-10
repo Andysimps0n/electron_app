@@ -8,10 +8,10 @@ import {
 } from '../shared/icons'
 
 const NAV_ITEMS = [
-  { id: 'calendar', label: 'Calendar', Icon: CalendarIcon },
-  { id: 'notes', label: 'Notes', Icon: NoteIcon },
-  { id: 'timer', label: 'Timer', Icon: TimerIcon },
-  { id: 'music', label: 'Music', Icon: MusicIcon },
+  { id: 'calendar', label: '캘린더', Icon: CalendarIcon },
+  { id: 'notes', label: '노트', Icon: NoteIcon },
+  { id: 'timer', label: '타이머', Icon: TimerIcon },
+  { id: 'music', label: '음악', Icon: MusicIcon },
 ]
 
 export default function NavRail({
@@ -24,7 +24,7 @@ export default function NavRail({
   return (
     <div className="nav-rail-shell">
       <div className="nav-rail-shell-clip">
-        <nav className="nav-rail" aria-label="Main navigation">
+        <nav className="nav-rail" aria-label="메인 탐색">
           <div className="nav-rail-items">
             {NAV_ITEMS.map(({ id, label, Icon }) => (
               <button
@@ -44,8 +44,8 @@ export default function NavRail({
             <button
               type="button"
               className="nav-rail-item"
-              aria-label="Split view"
-              title="Split view (Cmd/Ctrl + \)"
+              aria-label="화면 분할"
+              title="화면 분할 (Cmd/Ctrl + \)"
               disabled={!canSplit}
               onClick={onSplitView}
             >
@@ -55,7 +55,7 @@ export default function NavRail({
             <button
               type="button"
               className="nav-rail-item"
-              aria-label="Settings"
+              aria-label="설정"
               onClick={onOpenSettings}
             >
               <SettingsIcon />

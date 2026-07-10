@@ -24,7 +24,7 @@ export default function DigitalClock({ className = '' }) {
       <time
         className="digital-clock-time"
         dateTime={now.toISOString()}
-        aria-label={`Current time ${clock.hours}:${clock.minutes} ${clock.period}, ${dateLabel}`}
+        aria-label={`현재 시각 ${clock.hours}:${clock.minutes} ${clock.period}, ${dateLabel}`}
       >
         <span className="digital-clock-digit">{clock.hours}</span>
         <span className="digital-clock-separator" aria-hidden="true">
