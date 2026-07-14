@@ -46,15 +46,17 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: var(--radius-sm);
-  color: var(--black-300);
-  font: var(--body-sm);
+  color: var(--text-muted);
+  font: var(--body-sm-bold);
 }
 
+/* Active panel gets the "weak / primary" treatment: blue-tinted fill with
+   blue text, per the Toss secondary-action pattern. */
 .split-panel-active .split-panel-title {
-  color: var(--event-text);
-  background: var(--bg-timeblock);
+  color: var(--accent-hover);
+  background: var(--accent-weak);
 }
 
 .split-panel-close {
@@ -66,15 +68,16 @@
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--black-300);
+  color: var(--text-muted);
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
 }
 
 .split-panel-close:hover {
-  color: var(--black-500);
-  background: var(--black-100);
+  color: var(--text-strong);
+  background: var(--bg-surface);
 }
 
 .split-panel-body {
@@ -108,7 +111,7 @@
 
 .empty-panel-title {
   margin: 0;
-  color: var(--black-300);
+  color: var(--text-emphasis);
   font: var(--body-base);
 }
 
@@ -116,34 +119,39 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 200px;
+  width: 220px;
 }
 
+/* Compact card pattern: white surface, 1px grey200 border, 8px radius. */
 .empty-panel-btn {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 14px;
   border: var(--border-width) solid var(--border-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background: var(--bg-main);
-  color: var(--black-500);
-  font: var(--body-sm);
+  color: var(--text-emphasis);
+  font: var(--body-sm-bold);
   cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard);
 }
 
 .empty-panel-btn:hover {
-  color: var(--black-500);
-  background: var(--black-100);
-  border-color: var(--accent-green);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-hover);
 }
+
 /* ==========================================================================
    Nav rail
    ========================================================================== */
 
 .nav-rail-shell {
-  --nav-rail-width: 56px;
+  --nav-rail-width: 64px;
   position: relative;
   flex-shrink: 0;
   align-self: stretch;
@@ -177,21 +185,26 @@
   width: 100%;
 }
 
+/* Tab-bar pattern: inactive icons grey400, active icon blue500. The active
+   fill is blue50 — blue only ever marks interactive/active elements. */
 .nav-rail-item {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  color: var(--black-300);
+  width: 44px;
+  height: 44px;
+  color: var(--text-muted);
   background: transparent;
   border-radius: var(--radius-md);
   cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
 }
 
 .nav-rail-item:hover:not(.nav-rail-item-active):not(:disabled) {
-  color: var(--black-500);
-  background: var(--black-100);
+  color: var(--text-emphasis);
+  background: var(--bg-surface);
 }
 
 .nav-rail-item:disabled {
@@ -201,8 +214,8 @@
 
 .nav-rail-item-active,
 .nav-rail-item-active:hover {
-  background: var(--accent-green);
-  color: var(--event-text);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .nav-rail-label {

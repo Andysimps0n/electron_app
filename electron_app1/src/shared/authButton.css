@@ -12,16 +12,17 @@
   height: 36px;
   padding: 0 14px;
   border: var(--border-width) solid var(--border-color);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--black-500);
+  border-radius: var(--radius-sm);
+  background: var(--bg-main);
+  color: var(--text-emphasis);
   cursor: pointer;
   flex-shrink: 0;
   font: var(--body-sm-bold);
+  transition: background var(--motion-fast) var(--ease-standard);
 }
 
 .auth-button:hover:not(:disabled) {
-  background: var(--black-100);
+  background: var(--bg-surface);
 }
 
 .auth-button:disabled {
@@ -49,8 +50,8 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  background: var(--accent-green-muted);
-  color: var(--accent-green);
+  background: var(--accent-soft);
+  color: var(--accent);
   font: var(--body-sm-bold);
 }
 
@@ -68,20 +69,21 @@
   position: absolute;
   inset: 0;
   border: 0;
-  background: rgba(0, 0, 0, 0.54);
+  background: var(--scrim);
   cursor: pointer;
 }
 
+/* Centered modal: white, 16px radius, modal shadow, no border. */
 .login-card {
   position: relative;
   z-index: 1;
   width: min(360px, 100%);
   padding: 32px;
-  border: var(--border-width) solid var(--border-color);
+  border: none;
   border-radius: var(--radius-lg);
   background: var(--bg-main);
-  color: var(--black-500);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+  color: var(--text-strong);
+  box-shadow: var(--shadow-modal);
   text-align: center;
 }
 
@@ -94,18 +96,19 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border: var(--border-width) solid var(--border-color);
+  border: none;
   border-radius: 50%;
   background: transparent;
-  color: var(--black-300);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 20px;
   line-height: 1;
+  transition: background var(--motion-fast) var(--ease-standard);
 }
 
 .login-card-close:hover {
-  background: var(--black-100);
-  color: var(--black-500);
+  background: var(--bg-surface);
+  color: var(--text-strong);
 }
 
 .login-card-mark {
@@ -115,36 +118,40 @@
   width: 48px;
   height: 48px;
   margin-bottom: 18px;
-  border: var(--border-width) solid var(--border-color);
+  border: none;
   border-radius: 50%;
-  color: var(--accent-green);
+  background: var(--accent-soft);
+  color: var(--accent);
   font: var(--body-lg-bold);
 }
 
 .login-card-title {
   margin: 0;
   font: var(--title-base);
+  color: var(--text-strong);
 }
 
 .login-card-copy {
   margin: 12px 0 24px;
-  color: var(--black-300);
+  color: var(--text-body);
   font: var(--body-sm);
 }
 
+/* Fill / Primary CTA: blue500 bg, white text, comfortable height. */
 .login-card-google-btn {
   width: 100%;
-  min-height: 42px;
+  min-height: 48px;
   border: 0;
   border-radius: var(--radius-md);
-  background: var(--accent-green);
-  color: var(--event-text);
+  background: var(--accent);
+  color: var(--on-accent);
   cursor: pointer;
-  font: var(--body-sm-bold);
+  font: var(--body-base-bold);
+  transition: background var(--motion-fast) var(--ease-standard);
 }
 
 .login-card-google-btn:hover:not(:disabled) {
-  background: var(--accent-green);
+  background: var(--accent-hover);
 }
 
 .login-card-google-btn:disabled {
@@ -154,6 +161,6 @@
 
 .login-card-error {
   margin: 16px 0 0;
-  color: var(--black-500);
+  color: var(--error);
   font: var(--body-sm);
 }

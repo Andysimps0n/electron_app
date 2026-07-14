@@ -3,9 +3,10 @@
   flex-direction: row;
   align-items: baseline;
   gap: 12px;
-  color: var(--black-500);
+  color: var(--text-strong);
 }
 
+/* Numbers are typography: 700 weight, tabular numerals, sans stack. */
 .digital-clock-time {
   display: inline-flex;
   align-items: baseline;
@@ -14,9 +15,8 @@
   border: none;
   background: transparent;
   color: inherit;
-  font: 600 20px/1 var(--font-mono);
+  font: 700 20px/1 var(--font-sans);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
 }
 
 .digital-clock-digit {
@@ -28,10 +28,10 @@
   margin-left: 4px;
   font: 600 12px/1 var(--font-sans);
   letter-spacing: 0.04em;
+  color: var(--text-muted);
 }
 
 .digital-clock-date {
   font: var(--body-sm-bold);
-  color: var(--black-300);
-  letter-spacing: 0.02em;
+  color: var(--text-muted);
 }

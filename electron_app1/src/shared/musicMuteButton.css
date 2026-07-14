@@ -5,19 +5,22 @@
   width: 36px;
   height: 36px;
   border: var(--border-width) solid var(--border-color);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--black-500);
+  border-radius: var(--radius-sm);
+  background: var(--bg-main);
+  color: var(--text-emphasis);
   cursor: pointer;
   flex-shrink: 0;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard);
 }
 
 .music-mute-btn:hover:not(.music-mute-btn-active) {
-  background: var(--black-100);
+  background: var(--bg-surface);
 }
 
 .music-mute-btn-active {
-  color: var(--accent-green);
-  border-color: var(--accent-green);
-  background: var(--accent-green-muted);
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }

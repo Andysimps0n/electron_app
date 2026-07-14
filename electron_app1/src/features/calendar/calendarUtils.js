@@ -5,30 +5,34 @@ export const SNAP_MINUTES = 30
 export const HORIZONTAL_SCROLL_DOMINANCE = 1.35
 export const HORIZONTAL_SCROLL_LOCK_MS = 220
 export const WEEK_OFFSETS = [-1, 0, 1]
+// Event colors follow the Toss semantic palette (DESIGN.md §2):
+// warning orange, premium purple, blue500, success green. Each color has a
+// solid (left bar / swatch), a muted tint (block fill), and a stronger tint
+// (selected/editing fill).
 export const EVENT_COLORS = {
   orange: {
     label: '주황',
-    solid: 'rgb(255, 149, 64)',
-    muted: 'rgba(255, 149, 64, 0.12)',
-    light: 'rgba(255, 149, 64, 0.4)',
+    solid: 'rgb(254, 152, 0)',
+    muted: 'rgba(254, 152, 0, 0.12)',
+    light: 'rgba(254, 152, 0, 0.3)',
   },
   purple: {
     label: '보라',
-    solid: 'rgb(186, 104, 255)',
-    muted: 'rgba(186, 104, 255, 0.12)',
-    light: 'rgba(186, 104, 255, 0.4)',
+    solid: 'rgb(162, 52, 199)',
+    muted: 'rgba(162, 52, 199, 0.1)',
+    light: 'rgba(162, 52, 199, 0.25)',
   },
   blue: {
     label: '파랑',
-    solid: 'rgb(76, 156, 255)',
-    muted: 'rgba(76, 156, 255, 0.12)',
-    light: 'rgba(76, 156, 255, 0.4)',
+    solid: 'rgb(49, 130, 246)',
+    muted: 'rgba(49, 130, 246, 0.1)',
+    light: 'rgba(49, 130, 246, 0.25)',
   },
   green: {
     label: '초록',
-    solid: 'rgb(112, 243, 80)',
-    muted: 'rgba(112, 243, 80, 0.12)',
-    light: 'rgba(112, 243, 80, 0.4)',
+    solid: 'rgb(3, 178, 108)',
+    muted: 'rgba(3, 178, 108, 0.1)',
+    light: 'rgba(3, 178, 108, 0.25)',
   },
 }
 export const EVENT_COLOR_KEYS = Object.keys(EVENT_COLORS)

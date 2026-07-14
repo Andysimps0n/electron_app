@@ -1,46 +1,184 @@
+/* ==========================================================================
+   Design tokens — Toss design system (DESIGN.md)
+
+   Three-tier architecture, collapsed into two layers here:
+   1. Primitive tokens: the raw Toss palette (blue500, grey scale, semantics).
+   2. Semantic tokens: what components actually reference. If we ever retheme,
+      we only touch the semantic layer.
+
+   Rules baked in from the design doc:
+   - #3182f6 (blue500) is the ONLY interactive hue. It never decorates.
+   - Greys have warm undertones (grey900 = #191f28, not pure black).
+   - Radius scale: 8px inputs, 12px cards, 16px sheets, pill for toggles.
+   - Shadows are single-layer, pure black, low opacity.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Base layer: primitives + everything that does NOT change between themes
+   (the raw palette, typography, radius, motion). Themes only ever override
+   the *semantic* tokens below; these stay constant.
+   -------------------------------------------------------------------------- */
 :root {
-  --black: hsl(0, 0%, 0%);            /* true black: main background + darkest surfaces */
-  --deep: #002214;             /* medium darkness: elevated surfaces, borders, hovers */
-  --accent: rgb(112, 243, 80); /* accent: buttons + important, readable highlights */
-  --cream: #fff7e4;            /* light text */
-  --cream-muted: rgba(255, 247, 228, 0.55);
+  /* --- Primitive: Toss palette --- */
+  --blue-50: #e8f3ff;
+  --blue-500: #3182f6;
+  --blue-600: #2272eb;
 
-  --bg-main: var(--black);
-  --bg-elevated: var(--deep);
-  --bg-timeblock :rgb(89, 199, 62);
-  --black-500: var(--cream);       /* primary / strong text */
-  --black-300: var(--cream-muted); /* muted / secondary text */
-  --black-100: var(--deep);        /* hover surfaces / borders / outlines */
+  --grey-50: #f9fafb;
+  --grey-100: #f2f4f6;
+  --grey-200: #e5e8eb;
+  --grey-300: #d1d6db;
+  --grey-400: #b0b8c1;
+  --grey-500: #8b95a1;
+  --grey-600: #6b7684;
+  --grey-700: #4e5968;
+  --grey-800: #333d4b;
+  --grey-900: #191f28;
+  --white: #ffffff;
 
-  --accent-green: var(--accent);
-  --accent-green-muted: rgba(112, 243, 80, 0.12);
-  --accent-green-light: rgba(112, 243, 80, 0.4);
-  --event-text: var(--black);      /* text on top of accent-colored surfaces */
+  --red-500: #f04452;
+  --green-500: #03b26c;
+  --orange-500: #fe9800;
+  --purple-500: #a234c7;
 
-  --border-width: 1px;
-  --border-color: #1e1e1e;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* --- Typography ---
+     Toss Product Sans first; the stack degrades gracefully to system Korean
+     fonts. Numbers use tabular-nums (applied per-component, not globally). */
+  --font-sans: 'Toss Product Sans', 'Tossface', 'SF Pro KR', 'SF Pro Display',
+    -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', Roboto,
+    'Noto Sans KR', sans-serif;
+  --font-mono: 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
 
-  --title-lg: 700 28px/1.2 var(--font-sans);
-  --title-base: 600 18px/1.3 var(--font-sans);
-  --title-sm: 600 15px/1.3 var(--font-sans);
+  /* Type scale (weight size/line-height family) — from DESIGN.md hierarchy.
+     Restraint: only 400 (body), 600 (emphasis), 700 (headings). */
+  --display-lg: 700 26px/1.38 var(--font-sans);
+  --title-lg: 700 22px/1.36 var(--font-sans);
+  --title-base: 600 20px/1.4 var(--font-sans);
+  --title-sm: 600 16px/1.5 var(--font-sans);   /* subtitle: nav/list headers */
 
   --body-lg: 400 16px/1.5 var(--font-sans);
-  --body-base: 400 14px/1.5 var(--font-sans);
-  --body-sm: 400 12px/1.5 var(--font-sans);
+  --body-base: 400 14px/1.57 var(--font-sans);
+  --body-sm: 400 13px/1.54 var(--font-sans);
+  --caption: 400 12px/1.5 var(--font-sans);
 
   --body-lg-bold: 600 16px/1.5 var(--font-sans);
-  --body-base-bold: 600 14px/1.5 var(--font-sans);
-  --body-sm-bold: 600 12px/1.5 var(--font-sans);
+  --body-base-bold: 600 14px/1.57 var(--font-sans);
+  --body-sm-bold: 600 13px/1.54 var(--font-sans);
+  --caption-bold: 600 12px/1.5 var(--font-sans);
 
-  --body-lg-caps: 500 16px/1.5 var(--font-sans);
-  --body-base-caps: 500 14px/1.5 var(--font-sans);
-  --body-sm-caps: 500 11px/1.5 var(--font-sans);
+  /* --- Radius scale --- */
+  --radius-sm: 8px;    /* inputs, small buttons, compact cards */
+  --radius-md: 12px;   /* standard cards, dialogs */
+  --radius-lg: 16px;   /* featured cards, sheets, xlarge buttons */
+  --radius-pill: 9999px;
 
+  /* --- Motion --- */
+  --motion-fast: 150ms;
+  --motion-standard: 250ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* --- Misc --- */
+  --border-width: 1px;
   --icon-weight: 1.75;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 10px;
   --layout-top: 0px;
+}
+
+/* --------------------------------------------------------------------------
+   LIGHT THEME (default — the Toss white design)
+
+   This is what applies when there is no data-theme attribute, or when
+   data-theme="light". Every color a component uses resolves here.
+   -------------------------------------------------------------------------- */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  /* Surfaces */
+  --bg-main: var(--white);
+  --bg-surface: var(--grey-100);   /* segmented controls, skeletons, subtle fills */
+  --bg-elevated: var(--grey-50);   /* hover surfaces, list hovers */
+  --scrim: rgba(2, 9, 19, 0.5);    /* Toss blue-tinted dark overlay */
+
+  /* Interaction (blue = the only interactive hue) */
+  --accent: var(--blue-500);
+  --accent-hover: var(--blue-600);
+  --accent-soft: var(--blue-50);                 /* informational backgrounds */
+  --accent-weak: rgba(100, 168, 255, 0.15);      /* "weak" button/badge fill */
+  --on-accent: var(--white);
+
+  /* "Weak / Dark" fill for neutral secondary actions (취소, 닫기) */
+  --neutral-weak: rgba(2, 32, 71, 0.05);
+
+  /* Text */
+  --text-strong: var(--grey-900);       /* headings, financial-grade numbers */
+  --text-body: var(--grey-600);         /* descriptions, metadata */
+  --text-emphasis: var(--grey-700);     /* emphasized body, sub-headings */
+  --text-muted: var(--grey-500);        /* captions, secondary labels */
+  --text-placeholder: var(--grey-400);
+
+  /* Borders */
+  --border-color: var(--grey-200);
+  --border-strong: var(--grey-300);
+
+  /* Status */
+  --error: var(--red-500);
+  --success: var(--green-500);
+  --warning: var(--orange-500);
+
+  /* Elevation (single-layer, pure black, low opacity) */
+  --shadow-subtle: 0px 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-standard: 0px 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-elevated: 0px 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-modal: 0px 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+/* --------------------------------------------------------------------------
+   DARK THEME (the original black canvas + neon-green accent)
+
+   Only the semantic tokens are overridden; the primitive palette, type,
+   radius, and motion above are shared. Because black-on-black shadows are
+   invisible, the shadow tokens here use a 1px light ring so cards/dialogs
+   still separate from the background.
+   -------------------------------------------------------------------------- */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --bg-main: #000000;              /* true black canvas */
+  --bg-surface: #0a1712;           /* segmented tracks, subtle fills */
+  --bg-elevated: #002214;          /* hover surfaces, list hovers */
+  --scrim: rgba(0, 0, 0, 0.6);
+
+  /* Interaction (neon green = the accent in dark mode) */
+  --accent: rgb(112, 243, 80);
+  --accent-hover: rgb(89, 199, 62);
+  --accent-soft: rgba(112, 243, 80, 0.12);
+  --accent-weak: rgba(112, 243, 80, 0.15);
+  --on-accent: #000000;            /* black text/icons on the green accent */
+
+  --neutral-weak: rgba(255, 247, 228, 0.08);
+
+  /* Text (warm cream on black) */
+  --text-strong: #fff7e4;
+  --text-emphasis: rgba(255, 247, 228, 0.86);
+  --text-body: rgba(255, 247, 228, 0.72);
+  --text-muted: rgba(255, 247, 228, 0.55);
+  --text-placeholder: rgba(255, 247, 228, 0.32);
+
+  /* Borders */
+  --border-color: #1e1e1e;
+  --border-strong: #2c2c2c;
+
+  /* Status */
+  --error: #f04452;
+  --success: #03b26c;
+  --warning: #fe9800;
+
+  /* Elevation — hairline ring (via inset-less shadow) + soft drop shadow */
+  --shadow-subtle: 0 0 0 1px #1a1a1a;
+  --shadow-standard: 0 0 0 1px #1e1e1e;
+  --shadow-elevated: 0 0 0 1px #262626, 0 10px 28px rgba(0, 0, 0, 0.6);
+  --shadow-modal: 0 0 0 1px #2c2c2c, 0 24px 60px rgba(0, 0, 0, 0.7);
 }

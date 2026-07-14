@@ -113,7 +113,8 @@ function NotesSidebar({ notes, activeNoteId, onSelectNote, onCreateNote }) {
   )
 }
 
-const HIGHLIGHT_COLOR = 'rgba(112, 243, 80, 0.35)'
+// Toss blue50 (#e8f3ff) — the subtle informational background color.
+const HIGHLIGHT_COLOR = '#e8f3ff'
 
 function applyEditorCommand(editor, command, value, onContentChange) {
   editor.focus()

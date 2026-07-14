@@ -4,8 +4,8 @@
   flex-shrink: 0;
   border-right: 0 solid var(--border-color);
   transition:
-    width 0.2s ease,
-    border-width 0.2s ease;
+    width var(--motion-standard) var(--ease-standard),
+    border-width var(--motion-standard) var(--ease-standard);
 }
 
 .month-sidebar-open {
@@ -16,11 +16,12 @@
 .month-sidebar > .sidebar {
   width: 260px;
 }
+
 .sidebar {
   width: 260px;
   flex-shrink: 0;
   background: var(--bg-main);
-  color: var(--black-500);
+  color: var(--text-strong);
   padding: 20px 16px 16px;
   display: flex;
   flex-direction: column;
@@ -45,9 +46,7 @@
 .sidebar-title {
   font: var(--title-sm);
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--black-500);
+  color: var(--text-strong);
 }
 
 .sidebar-panel-toggle {
@@ -59,7 +58,12 @@
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--black-300);
+  color: var(--text-muted);
   cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
 }
 
+.sidebar-panel-toggle:hover {
+  background: var(--bg-surface);
+  color: var(--text-strong);
+}

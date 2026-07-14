@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useTheme } from '../../contexts/ThemeContext'
 
 function AccountSection() {
   const { user, isLoading, signInWithGoogle, signOut } = useAuth()
@@ -63,7 +64,29 @@ function AccountSection() {
   )
 }
 
+const THEME_OPTIONS = [
+  {
+    value: 'system',
+    label: '시스템 설정',
+    hint: '기기 화면 모드를 따릅니다',
+  },
+  {
+    value: 'light',
+    label: '라이트 모드',
+    hint: '밝은 배경과 파란색 강조 색을 사용합니다',
+  },
+  {
+    value: 'dark',
+    label: '다크 모드',
+    hint: '어두운 배경과 초록색 강조 색을 사용합니다',
+  },
+]
+
 export default function SettingsPanel({ reverseScroll, onReverseScrollChange, onClose }) {
+  // Theme is a global concern, so it comes straight from context instead of
+  // being passed down as props like reverseScroll (which is calendar-only).
+  const { preference, setPreference } = useTheme()
+
   return (
     <div className="settings-panel" role="dialog" aria-modal="true" aria-label="설정">
       <button
@@ -86,6 +109,25 @@ export default function SettingsPanel({ reverseScroll, onReverseScrollChange, on
         </header>
 
         <AccountSection />
+
+        <section className="settings-panel-section">
+          <h3 className="settings-panel-section-title">화면</h3>
+          <div className="settings-panel-option-group" role="radiogroup" aria-label="테마">
+            {THEME_OPTIONS.map((option) => (
+              <label key={option.value} className="settings-panel-option">
+                <span className="settings-panel-option-label">{option.label}</span>
+                <span className="settings-panel-option-hint">{option.hint}</span>
+                <input
+                  type="radio"
+                  name="theme"
+                  value={option.value}
+                  checked={preference === option.value}
+                  onChange={() => setPreference(option.value)}
+                />
+              </label>
+            ))}
+          </div>
+        </section>
 
         <section className="settings-panel-section">
           <h3 className="settings-panel-section-title">캘린더</h3>

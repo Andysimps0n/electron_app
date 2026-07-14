@@ -11,7 +11,7 @@
 body {
   margin: 0;
   font: var(--body-base);
-  color: var(--black-500);
+  color: var(--text-strong);
   background: var(--bg-main);
   -webkit-font-smoothing: antialiased;
 }
@@ -30,6 +30,7 @@ body {
   stroke: currentColor;
   stroke-width: var(--icon-weight, 2);
 }
+
 .app {
   display: flex;
   flex-direction: row;
@@ -53,4 +54,34 @@ button {
   font: inherit;
   color: inherit;
   cursor: pointer;
+}
+
+/* Light, unobtrusive scrollbars to match the white canvas. */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Toss reduce-motion rule: everything collapses to instant. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0ms !important;
+    transition-duration: 0ms !important;
+  }
 }
