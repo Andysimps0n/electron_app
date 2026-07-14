@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -24,7 +26,10 @@ def echo(message: Message):
     
 
 
-MODEL_DIR = "./my_tinybert"  # path to the folder
+# Resolve the model folder relative to THIS file, not the shell's current
+# working directory. "./my_tinybert" only works if you happen to run uvicorn
+# from inside fastAPI/; on Render (or from the repo root) it would fail.
+MODEL_DIR = str(Path(__file__).parent / "my_tinybert")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
 model = AutoModelForTokenClassification.from_pretrained(MODEL_DIR)
 

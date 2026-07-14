@@ -2,11 +2,34 @@ import express from "express";
 
 const app = express();
 
-// The notes UI runs on a different origin (Vite :5173 / Electron) than this
-// proxy (:3000). Browsers block cross-origin fetch unless we send CORS headers.
-// Curl never hits this rule — that's why manual POSTs worked but the app didn't.
+// --- Deployment configuration (environment variables) ---
+// Render injects PORT; locally we keep the familiar 3000.
+const PORT = process.env.PORT || 3000;
+
+// Where the Python FastAPI model lives. On Render this is the FastAPI
+// service's public URL; locally it's the uvicorn dev server.
+const NER_SERVICE_URL = process.env.NER_SERVICE_URL || "http://127.0.0.1:8000";
+
+// Which browser origins may call this proxy. In production, set
+// CLIENT_ORIGIN to the deployed frontend URL (e.g. https://myapp.vercel.app).
+// The localhost entries keep local development working.
+const ALLOWED_ORIGINS = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+];
+if (process.env.CLIENT_ORIGIN) {
+  ALLOWED_ORIGINS.push(process.env.CLIENT_ORIGIN);
+}
+
+// The notes UI runs on a different origin (Vite :5173 / Vercel) than this
+// proxy. Browsers block cross-origin fetch unless we send CORS headers.
+// We echo the request's Origin back only if it's on our allow list, instead
+// of "*", so random websites can't call our API from their pages.
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") {
@@ -21,11 +44,17 @@ app.get("/", (req, res) => {
   res.send("Server is running!");
 });
 
-// Need { text : "weqweqweq" }
+// Expects { text: "go to gym at 10pm" }
 app.post("/extract", async (req, res) => {
-  console.log(req.body);
+  const text = req.body?.text;
+
+  // Reject bad input here so we never forward garbage to the model service.
+  if (typeof text !== "string" || text.trim() === "") {
+    return res.status(400).json({ error: "Request body must include a non-empty 'text' string" });
+  }
+
   try {
-    const schedule = await extract(req.body.text);
+    const schedule = await extract(text);
     res.json(schedule);
   } catch (err) {
     console.error(err);
@@ -33,12 +62,12 @@ app.post("/extract", async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server listening on http://localhost:3000");
+app.listen(PORT, () => {
+  console.log(`Server listening on port ${PORT}`);
 });
 
 async function extract(text) {
-  const response = await fetch("http://127.0.0.1:8000/extract", {
+  const response = await fetch(`${NER_SERVICE_URL}/extract`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -55,6 +84,5 @@ async function extract(text) {
   }
 
   const data = await response.json();
-  console.log(data);
   return data;
 }
