@@ -1,14 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
 import { openExternalUrl } from '../../lib/openExternalUrl'
+import { useCalendarEvents } from '../../hooks/useCalendarEvents'
+import {
+  END_HOUR,
+  SNAP_MINUTES,
+  getDateKey,
+} from '../calendar/calendarUtils'
 import {
   MAX_SELECTION_LENGTH,
   MIN_SELECTION_LENGTH,
   buildCoupangSearchUrl,
   fetchNoteSuggestion,
+  parseTimeToMinutes,
 } from './noteSuggestion'
 
 const CHIP_GAP = 8
 const CHIP_ESTIMATED_HEIGHT = 36
+/** Default length for events created from a note selection chip. */
+const DEFAULT_EVENT_DURATION_MINUTES = 60
+const CALENDAR_TOAST_MS = 5000
 
 function readEditorSelection(editor) {
   const selection = window.getSelection()
@@ -61,14 +71,20 @@ function positionForRect(rect) {
 }
 
 /**
- * Floating AI action chip that appears next to a drag-selection in the note body.
- * Problem it solves: turn highlighted text into a one-click next action (e.g. Coupang search).
+ * Floating action chip next to a text selection in the note body.
+ * Shopping → Coupang search; schedule-like text → create a calendar event.
  */
-export default function NoteSelectionSuggestion({ editorRef, noteId }) {
+export default function NoteSelectionSuggestion({
+  editorRef,
+  noteId,
+  onOpenView,
+}) {
   const [anchor, setAnchor] = useState(null)
   const [status, setStatus] = useState('idle')
   const [suggestion, setSuggestion] = useState(null)
   const [errorMessage, setErrorMessage] = useState('')
+  const [showCalendarToast, setShowCalendarToast] = useState(false)
+  const { createEvent } = useCalendarEvents()
 
   const abortRef = useRef(null)
   const cacheRef = useRef(new Map())
@@ -84,6 +100,17 @@ export default function NoteSelectionSuggestion({ editorRef, noteId }) {
     setSuggestion(null)
     setErrorMessage('')
   }
+
+  useEffect(() => {
+    if (!showCalendarToast) {
+      return undefined
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setShowCalendarToast(false)
+    }, CALENDAR_TOAST_MS)
+    return () => window.clearTimeout(timeoutId)
+  }, [showCalendarToast])
 
   async function runFetch(selected) {
     if (abortRef.current) {
@@ -242,49 +269,108 @@ export default function NoteSelectionSuggestion({ editorRef, noteId }) {
     }
   }, [editorRef, noteId])
 
+  function createEventFromSuggestion() {
+    const startMinute = parseTimeToMinutes(suggestion.timeText)
+    if (startMinute === null) {
+      return false
+    }
+
+    // Snap to the calendar grid; default block is 1 hour, clamped so a late
+    // start (e.g. 11:30pm) still ends at the day boundary.
+    const snappedStart = Math.min(
+      Math.round(startMinute / SNAP_MINUTES) * SNAP_MINUTES,
+      END_HOUR * 60 - SNAP_MINUTES,
+    )
+    const endMinute = Math.min(
+      snappedStart + DEFAULT_EVENT_DURATION_MINUTES,
+      END_HOUR * 60,
+    )
+
+    const today = new Date()
+    createEvent({
+      id: crypto.randomUUID(),
+      dateKey: getDateKey(today),
+      dayIndex: today.getDay(),
+      title: suggestion.title,
+      details: '',
+      color: null,
+      startMinute: snappedStart,
+      endMinute,
+    })
+    return true
+  }
+
   async function handleChipClick() {
-    if (!suggestion || suggestion.action !== 'coupang_search') {
+    if (!suggestion) {
       return
     }
-    await openExternalUrl(buildCoupangSearchUrl(suggestion.query))
-    clearSuggestion()
+
+    if (suggestion.action === 'coupang_search') {
+      await openExternalUrl(buildCoupangSearchUrl(suggestion.query))
+      clearSuggestion()
+      return
+    }
+
+    if (suggestion.action === 'create_calendar_event') {
+      const created = createEventFromSuggestion()
+      if (!created) {
+        setStatus('error')
+        setErrorMessage('시간을 이해하지 못했어요')
+        setTimeout(() => clearSuggestion(), 1200)
+        return
+      }
+      clearSuggestion()
+      setShowCalendarToast(true)
+    }
   }
 
-  if (!anchor || status === 'idle') {
-    return null
+  function handleGoToCalendar() {
+    setShowCalendarToast(false)
+    onOpenView?.('calendar')
   }
 
-  const { top, left, transform } = anchor.position
+  const { top, left, transform } = anchor?.position ?? {
+    top: 0,
+    left: 0,
+    transform: 'none',
+  }
 
   return (
-    <div
-      ref={chipRef}
-      className="note-selection-suggestion"
-      style={{ top, left, transform }}
-      // Keep the text selection visible when interacting with the chip.
-      onMouseDown={(event) => event.preventDefault()}
-    >
-      {status === 'loading' && (
-        <span className="note-selection-suggestion-loading" aria-live="polite">
-          생각 중…
-        </span>
-      )}
-
-      {status === 'error' && (
-        <span className="note-selection-suggestion-error" aria-live="polite">
-          {errorMessage}
-        </span>
-      )}
-
-      {status === 'ready' && suggestion && (
-        <button
-          type="button"
-          className="note-selection-suggestion-chip"
-          onClick={handleChipClick}
+    <>
+      {anchor && status !== 'idle' && status !== 'loading' && (
+        <div
+          ref={chipRef}
+          className="note-selection-suggestion"
+          style={{ top, left, transform }}
+          // Keep the text selection visible when interacting with the chip.
+          onMouseDown={(event) => event.preventDefault()}
         >
-          {suggestion.label}
-        </button>
+          {status === 'error' && (
+            <span className="note-selection-suggestion-error" aria-live="polite">
+              {errorMessage}
+            </span>
+          )}
+
+          {status === 'ready' && suggestion && (
+            <button
+              type="button"
+              className="note-selection-suggestion-chip"
+              onClick={handleChipClick}
+            >
+              {suggestion.label}
+            </button>
+          )}
+        </div>
       )}
-    </div>
+
+      {showCalendarToast && (
+        <div className="notes-deleted-toast" role="status">
+          <span>일정이 추가되었습니다.</span>
+          <button type="button" onClick={handleGoToCalendar}>
+            캘린더로 이동
+          </button>
+        </div>
+      )}
+    </>
   )
 }

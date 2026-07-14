@@ -62,6 +62,7 @@ function App() {
   const viewContext = {
     settingsOpen,
     onSettingsOpenChange: setSettingsOpen,
+    onOpenView: handleOpenView,
   }
 
   return (

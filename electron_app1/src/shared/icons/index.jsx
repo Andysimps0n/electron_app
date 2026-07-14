@@ -32,6 +32,15 @@ export function NoteIcon({ width = 20, height = 20, weight = 2 }) {
   )
 }
 
+export function TrashIcon({ width = 18, height = 18, weight = 1.75 }) {
+  return (
+    <Icon viewBox="0 0 18 18" width={width} height={height} weight={weight}>
+      <path d="M3 5h12M7 5V3h4v2M5 5l.7 10h6.6L13 5" strokeLinecap="round" />
+      <path d="M8 8v4M10 8v4" strokeLinecap="round" />
+    </Icon>
+  )
+}
+
 export function ChevronLeftIcon({ width = 16, height = 16, weight = 2 }) {
   return (
     <Icon viewBox="0 0 16 16" width={width} height={height} weight={weight}>

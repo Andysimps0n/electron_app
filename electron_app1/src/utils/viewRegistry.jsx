@@ -45,7 +45,10 @@ export const VIEW_REGISTRY = {
     title: '노트',
     Icon: NoteIcon,
     render: (context) => (
-      <Notes defaultSidebarOpen={context.defaultSidebarOpen} />
+      <Notes
+        defaultSidebarOpen={context.defaultSidebarOpen}
+        onOpenView={context.onOpenView}
+      />
     ),
   },
   music: {

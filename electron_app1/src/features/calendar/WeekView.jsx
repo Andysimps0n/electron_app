@@ -27,6 +27,7 @@ import {
   START_HOUR,
   WEEK_OFFSETS,
 } from './calendarUtils'
+import { TrashIcon } from '../../shared/icons'
 
 export default function WeekView({
   selectedDate,
@@ -1023,11 +1024,11 @@ export default function WeekView({
     const nowMinutes = now.getHours() * 60 + now.getMinutes()
     const snappedStart =
       Math.ceil(nowMinutes / SNAP_MINUTES) * SNAP_MINUTES || 9 * 60
-    const startMinute = clamp(snappedStart, START_HOUR * 60, END_HOUR * 60 - 90)
+    const startMinute = clamp(snappedStart, START_HOUR * 60, END_HOUR * 60 - 60)
     const selection = {
       dayIndex: dayIndex >= 0 ? dayIndex : 0,
       startMinute,
-      endMinute: startMinute + 90,
+      endMinute: startMinute + 60,
     }
 
     setDraftSelection(selection)
@@ -1300,6 +1301,16 @@ export default function WeekView({
                 ))}
               </div>
               <div className="event-editor-action-buttons">
+                {editingEventId && (
+                  <button
+                    type="button"
+                    className="event-editor-delete-btn"
+                    aria-label="일정 삭제"
+                    onClick={handleDeleteEvent}
+                  >
+                    <TrashIcon />
+                  </button>
+                )}
                 <button
                   type="button"
                   className="event-editor-ghost-btn"

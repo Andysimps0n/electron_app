@@ -158,10 +158,33 @@
 .notes-sidebar-list {
   list-style: none;
   margin: 0;
-  padding: 0 8px 16px;
+  padding: 0 8px 8px;
   overflow-y: auto;
   flex: 1;
 }
+
+.notes-sidebar-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 12px 12px;
+  border-top: var(--border-width) solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.notes-sidebar-deleted-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font: var(--body-sm-bold);
+  cursor: pointer;
+}
+
 
 .notes-sidebar-item {
   display: flex;
@@ -206,6 +229,88 @@
 .notes-sidebar-item-active .notes-sidebar-item-date {
   color: inherit;
   opacity: 0.75;
+}
+
+.notes-sidebar-item-deleted {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.notes-sidebar-item-deleted:disabled {
+  opacity: 1;
+}
+
+.notes-sidebar-empty {
+  padding: 12px;
+  color: var(--text-muted);
+  font: var(--body-sm);
+  text-align: center;
+}
+
+/* Drag-to-reorder states. The <li> is the draggable element; the classes
+   below are applied to the inner .notes-sidebar-item button. */
+.notes-sidebar-list li {
+  position: relative;
+  cursor: grab;
+}
+
+.notes-sidebar-list li:active {
+  cursor: grabbing;
+}
+
+/* The item being dragged fades out so the drop target stands out. */
+.notes-sidebar-item-dragging {
+  opacity: 0.4;
+}
+
+/* The insertion bar sits in the gap between two notes, instead of making the
+   hovered note itself glow. Its position follows the pointer's upper/lower
+   half while dragging. */
+.notes-sidebar-drop-before::after,
+.notes-sidebar-drop-after::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  left: 12px;
+  z-index: 1;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.notes-sidebar-drop-before::after {
+  top: -2px;
+}
+
+.notes-sidebar-drop-after::after {
+  bottom: 2px;
+}
+
+.notes-deleted-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-main);
+  color: var(--text-strong);
+  font: var(--body-sm);
+  box-shadow: var(--shadow-elevated);
+}
+
+.notes-deleted-toast button {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font: var(--body-sm-bold);
+  cursor: pointer;
 }
 
 .note-editor {

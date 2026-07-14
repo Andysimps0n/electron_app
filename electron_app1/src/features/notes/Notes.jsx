@@ -7,6 +7,7 @@ import {
   ChecklistIcon,
   HighlightIcon,
   PanelIcon,
+  TrashIcon,
 } from '../../shared/icons'
 import {
   getListItemAtSelection,
@@ -42,7 +43,10 @@ function loadNotes() {
       return [createNote()]
     }
 
-    return parsed
+    // Older saves relied on re-sorting by createdAt at render time. Now the
+    // array order itself is the display order, so normalize once on load:
+    // start the manual order from the previous "newest first" ordering.
+    return [...parsed].sort((a, b) => b.createdAt - a.createdAt)
   } catch {
     return [createNote()]
   }
@@ -66,17 +70,84 @@ function getNoteDisplayTitle(note) {
   return '제목 없음'
 }
 
-function sortNotesByRecent(notes) {
-  return [...notes].sort((a, b) => b.createdAt - a.createdAt)
-}
+function NotesSidebar({
+  notes,
+  activeNoteId,
+  onSelectNote,
+  onCreateNote,
+  onReorderNotes,
+  showingDeletedNotes,
+  onToggleDeletedNotes,
+}) {
+  // Which note is being dragged / hovered over, for visual feedback only.
+  // The actual order lives in the parent's `notes` state.
+  const [draggingNoteId, setDraggingNoteId] = useState(null)
+  const [dragOverTarget, setDragOverTarget] = useState(null)
+  // Some browsers fire a click right after a drop; use this flag to
+  // avoid treating that click as a note selection.
+  const justDraggedRef = useRef(false)
 
-function NotesSidebar({ notes, activeNoteId, onSelectNote, onCreateNote }) {
-  const recentNotes = sortNotesByRecent(notes)
+  function handleDragStart(event, noteId) {
+    justDraggedRef.current = true
+    setDraggingNoteId(noteId)
+    event.dataTransfer.effectAllowed = 'move'
+    // Firefox requires data to be set for the drag to start.
+    event.dataTransfer.setData('text/plain', noteId)
+  }
+
+  function handleDragOver(event, noteId) {
+    // preventDefault marks this element as a valid drop target.
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'move'
+
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const placement =
+      event.clientY < bounds.top + bounds.height / 2 ? 'before' : 'after'
+    const nextTarget = { noteId, placement }
+
+    if (
+      noteId !== dragOverTarget?.noteId ||
+      placement !== dragOverTarget.placement
+    ) {
+      setDragOverTarget(nextTarget)
+    }
+  }
+
+  function handleDrop(event, targetNoteId) {
+    event.preventDefault()
+    const fromIndex = notes.findIndex((note) => note.id === draggingNoteId)
+    const toIndex = notes.findIndex((note) => note.id === targetNoteId)
+
+    if (fromIndex !== -1 && toIndex !== -1) {
+      const insertAt =
+        dragOverTarget?.placement === 'after' ? toIndex + 1 : toIndex
+      onReorderNotes(fromIndex, insertAt)
+    }
+  }
+
+  function handleDragEnd() {
+    setDraggingNoteId(null)
+    setDragOverTarget(null)
+    // Clear the flag after the current event turn so a stray
+    // click-after-drop is ignored, but the next real click works.
+    window.setTimeout(() => {
+      justDraggedRef.current = false
+    }, 0)
+  }
+
+  function handleSelectNote(noteId) {
+    if (justDraggedRef.current) {
+      return
+    }
+    onSelectNote(noteId)
+  }
 
   return (
     <aside className="sidebar notes-sidebar">
       <div className="notes-sidebar-header">
-        <h2 className="sidebar-title">최근 노트</h2>
+        <h2 className="sidebar-title">
+          {showingDeletedNotes ? '삭제된 노트' : '노트'}
+        </h2>
         <button
           type="button"
           className="notes-sidebar-new-btn"
@@ -87,28 +158,89 @@ function NotesSidebar({ notes, activeNoteId, onSelectNote, onCreateNote }) {
       </div>
 
       <ul className="notes-sidebar-list">
-        {recentNotes.map((note) => (
-          <li key={note.id}>
-            <button
-              type="button"
-              className={`notes-sidebar-item${
-                note.id === activeNoteId ? ' notes-sidebar-item-active' : ''
-              }`}
-              onClick={() => onSelectNote(note.id)}
-            >
-              <span className="notes-sidebar-item-title">
-                {getNoteDisplayTitle(note)}
-              </span>
-              <span className="notes-sidebar-item-date">
-                {new Date(note.createdAt).toLocaleDateString('ko-KR', {
-                  month: 'short',
-                  day: 'numeric',
-                })}
-              </span>
-            </button>
+        {notes.length === 0 && (
+          <li className="notes-sidebar-empty">
+            {showingDeletedNotes ? '삭제된 노트가 없습니다.' : '노트가 없습니다.'}
           </li>
-        ))}
+        )}
+        {notes.map((note) => {
+          const itemClasses = [
+            'notes-sidebar-item',
+            !showingDeletedNotes && note.id === activeNoteId
+              ? 'notes-sidebar-item-active'
+              : '',
+            note.id === draggingNoteId ? 'notes-sidebar-item-dragging' : '',
+            showingDeletedNotes ? 'notes-sidebar-item-deleted' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')
+          const listItemClasses = [
+            !showingDeletedNotes &&
+            dragOverTarget?.noteId === note.id &&
+            note.id !== draggingNoteId
+              ? `notes-sidebar-drop-${dragOverTarget.placement}`
+              : '',
+          ]
+            .filter(Boolean)
+            .join(' ')
+
+          return (
+            <li
+              key={note.id}
+              className={listItemClasses}
+              draggable={!showingDeletedNotes}
+              onDragStart={
+                showingDeletedNotes
+                  ? undefined
+                  : (event) => handleDragStart(event, note.id)
+              }
+              onDragOver={
+                showingDeletedNotes
+                  ? undefined
+                  : (event) => handleDragOver(event, note.id)
+              }
+              onDrop={
+                showingDeletedNotes
+                  ? undefined
+                  : (event) => handleDrop(event, note.id)
+              }
+              onDragEnd={showingDeletedNotes ? undefined : handleDragEnd}
+            >
+              <button
+                type="button"
+                className={itemClasses}
+                disabled={showingDeletedNotes}
+                onClick={
+                  showingDeletedNotes
+                    ? undefined
+                    : () => handleSelectNote(note.id)
+                }
+              >
+                <span className="notes-sidebar-item-title">
+                  {getNoteDisplayTitle(note)}
+                </span>
+                <span className="notes-sidebar-item-date">
+                  {new Date(note.createdAt).toLocaleDateString('ko-KR', {
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </span>
+              </button>
+            </li>
+          )
+        })}
       </ul>
+
+      <div className="notes-sidebar-footer">
+        <button
+          type="button"
+          className="notes-sidebar-deleted-btn"
+          aria-label={showingDeletedNotes ? '노트 목록으로 돌아가기' : '삭제된 노트 보기'}
+          onClick={onToggleDeletedNotes}
+        >
+          {showingDeletedNotes ? '돌아가기' : '삭제된 노트 보기'}
+        </button>
+      </div>
     </aside>
   )
 }
@@ -133,7 +265,7 @@ function toggleList(editor, onContentChange, checklist = false) {
   onContentChange(editor.innerHTML)
 }
 
-function NoteFormatToolbar({ editorRef, onContentChange }) {
+function NoteFormatToolbar({ editorRef, onContentChange, onDeleteNote }) {
   function run(action) {
     const editor = editorRef.current
     if (!editor) {
@@ -245,11 +377,31 @@ function NoteFormatToolbar({ editorRef, onContentChange }) {
           <BulletListIcon />
         </button>
       </div>
+
+      <span className="notes-format-divider" aria-hidden="true" />
+
+      <div className="notes-format-group">
+        <button
+          type="button"
+          className="notes-format-btn notes-format-btn-icon"
+          aria-label="노트 삭제"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={onDeleteNote}
+        >
+          <TrashIcon />
+        </button>
+      </div>
     </div>
   )
 }
 
-function NoteEditor({ note, onTitleChange, onContentChange }) {
+function NoteEditor({
+  note,
+  onTitleChange,
+  onContentChange,
+  onDeleteNote,
+  onOpenView,
+}) {
   const editorRef = useRef(null)
   // Same Hangul IME pattern as TodoList: keep "composing" true until after
   // the current event turn so a confirm-Enter is not treated as a new bullet.
@@ -340,6 +492,7 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
       <NoteFormatToolbar
         editorRef={editorRef}
         onContentChange={onContentChange}
+        onDeleteNote={onDeleteNote}
       />
 
       <div className="note-editor">
@@ -367,27 +520,61 @@ function NoteEditor({ note, onTitleChange, onContentChange }) {
         />
       </div>
 
-      <NoteSelectionSuggestion editorRef={editorRef} noteId={note.id} />
+      <NoteSelectionSuggestion
+        editorRef={editorRef}
+        noteId={note.id}
+        onOpenView={onOpenView}
+      />
     </div>
   )
 }
 
-export default function Notes({ defaultSidebarOpen = true }) {
-  const [notes, setNotes] = useState(loadNotes)
-  const [activeNoteId, setActiveNoteId] = useState(() => notes[0]?.id ?? null)
-  const [sidebarOpen, setSidebarOpen] = useState(defaultSidebarOpen)
+function DeletedNoteToast({ onUndo }) {
+  return (
+    <div className="notes-deleted-toast" role="status">
+      <span>노트가 삭제되었습니다.</span>
+      <button type="button" onClick={onUndo}>
+        실행 취소
+      </button>
+    </div>
+  )
+}
 
-  const activeNote = notes.find((note) => note.id === activeNoteId) ?? notes[0]
+export default function Notes({ defaultSidebarOpen = true, onOpenView }) {
+  const [notes, setNotes] = useState(loadNotes)
+  const [activeNoteId, setActiveNoteId] = useState(
+    () => notes.find((note) => !note.deletedAt)?.id ?? null,
+  )
+  const [sidebarOpen, setSidebarOpen] = useState(defaultSidebarOpen)
+  const [showingDeletedNotes, setShowingDeletedNotes] = useState(false)
+  const [lastDeletedNoteId, setLastDeletedNoteId] = useState(null)
+
+  const activeNotes = notes.filter((note) => !note.deletedAt)
+  const deletedNotes = notes.filter((note) => note.deletedAt)
+  const activeNote =
+    activeNotes.find((note) => note.id === activeNoteId) ?? activeNotes[0]
+  const sidebarNotes = showingDeletedNotes ? deletedNotes : activeNotes
 
   useEffect(() => {
     localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes))
   }, [notes])
 
   useEffect(() => {
-    if (!activeNote && notes.length > 0) {
-      setActiveNoteId(notes[0].id)
+    if (!activeNote && activeNotes.length > 0) {
+      setActiveNoteId(activeNotes[0].id)
     }
-  }, [activeNote, notes])
+  }, [activeNote, activeNotes])
+
+  useEffect(() => {
+    if (!lastDeletedNoteId) {
+      return undefined
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setLastDeletedNoteId(null)
+    }, 5000)
+    return () => window.clearTimeout(timeoutId)
+  }, [lastDeletedNoteId])
 
   function updateActiveNote(updates) {
     if (!activeNote) {
@@ -407,6 +594,66 @@ export default function Notes({ defaultSidebarOpen = true }) {
     const note = createNote()
     setNotes((current) => [note, ...current])
     setActiveNoteId(note.id)
+    setShowingDeletedNotes(false)
+  }
+
+  function handleReorderNotes(fromIndex, toIndex) {
+    // `toIndex` is measured before the dragged note is removed. Removing a
+    // note before the insertion point shifts that point left by one.
+    const insertionIndex =
+      fromIndex < toIndex ? toIndex - 1 : toIndex
+
+    if (fromIndex === insertionIndex) {
+      return
+    }
+
+    setNotes((current) => {
+      const active = current.filter((note) => !note.deletedAt)
+      const deleted = current.filter((note) => note.deletedAt)
+      const next = [...active]
+      const [moved] = next.splice(fromIndex, 1)
+      next.splice(insertionIndex, 0, moved)
+      return [...next, ...deleted]
+    })
+  }
+
+  function handleDeleteActiveNote() {
+    if (!activeNote) {
+      return
+    }
+
+    const activeIndex = activeNotes.findIndex(
+      (note) => note.id === activeNote.id,
+    )
+    const nextNote =
+      activeNotes[activeIndex + 1] ?? activeNotes[activeIndex - 1] ?? null
+
+    setNotes((current) =>
+      current.map((note) =>
+        note.id === activeNote.id
+          ? { ...note, deletedAt: Date.now() }
+          : note,
+      ),
+    )
+    setActiveNoteId(nextNote?.id ?? null)
+    setLastDeletedNoteId(activeNote.id)
+  }
+
+  function handleUndoDelete() {
+    if (!lastDeletedNoteId) {
+      return
+    }
+
+    setNotes((current) =>
+      current.map((note) =>
+        note.id === lastDeletedNoteId
+          ? { ...note, deletedAt: undefined }
+          : note,
+      ),
+    )
+    setActiveNoteId(lastDeletedNoteId)
+    setLastDeletedNoteId(null)
+    setShowingDeletedNotes(false)
   }
 
   if (!activeNote) {
@@ -417,10 +664,15 @@ export default function Notes({ defaultSidebarOpen = true }) {
           aria-hidden={!sidebarOpen}
         >
           <NotesSidebar
-            notes={notes}
+            notes={sidebarNotes}
             activeNoteId={activeNoteId}
             onSelectNote={setActiveNoteId}
             onCreateNote={handleCreateNote}
+            onReorderNotes={handleReorderNotes}
+            showingDeletedNotes={showingDeletedNotes}
+            onToggleDeletedNotes={() =>
+              setShowingDeletedNotes((showing) => !showing)
+            }
           />
         </aside>
         <div className="notes-empty">
@@ -429,6 +681,7 @@ export default function Notes({ defaultSidebarOpen = true }) {
             첫 노트 만들기
           </button>
         </div>
+        {lastDeletedNoteId && <DeletedNoteToast onUndo={handleUndoDelete} />}
       </div>
     )
   }
@@ -440,10 +693,15 @@ export default function Notes({ defaultSidebarOpen = true }) {
         aria-hidden={!sidebarOpen}
       >
         <NotesSidebar
-          notes={notes}
+          notes={sidebarNotes}
           activeNoteId={activeNoteId}
           onSelectNote={setActiveNoteId}
           onCreateNote={handleCreateNote}
+          onReorderNotes={handleReorderNotes}
+          showingDeletedNotes={showingDeletedNotes}
+          onToggleDeletedNotes={() =>
+            setShowingDeletedNotes((showing) => !showing)
+          }
         />
       </aside>
 
@@ -472,8 +730,11 @@ export default function Notes({ defaultSidebarOpen = true }) {
           note={activeNote}
           onTitleChange={(title) => updateActiveNote({ title })}
           onContentChange={(content) => updateActiveNote({ content })}
+          onDeleteNote={handleDeleteActiveNote}
+          onOpenView={onOpenView}
         />
       </div>
+      {lastDeletedNoteId && <DeletedNoteToast onUndo={handleUndoDelete} />}
     </div>
   )
 }

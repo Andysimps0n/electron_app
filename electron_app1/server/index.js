@@ -2,6 +2,19 @@ import express from "express";
 
 const app = express();
 
+// The notes UI runs on a different origin (Vite :5173 / Electron) than this
+// proxy (:3000). Browsers block cross-origin fetch unless we send CORS headers.
+// Curl never hits this rule — that's why manual POSTs worked but the app didn't.
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 app.use(express.json());
 
 app.get("/", (req, res) => {

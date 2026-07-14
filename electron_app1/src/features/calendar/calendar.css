@@ -837,7 +837,30 @@
 
 .event-editor-action-buttons {
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+
+.event-editor-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.event-editor-delete-btn:hover {
+  background: var(--bg-surface);
+  color: var(--text-strong);
 }
 
 /* Save = Fill / Primary; cancel/delete = Weak / Dark (neutral secondary). */
